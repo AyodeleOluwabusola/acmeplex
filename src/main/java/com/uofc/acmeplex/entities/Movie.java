@@ -29,6 +29,9 @@ public class Movie extends BaseEntity{
     @Column(name = "duration", nullable = false)
     private Integer movieDuration;
 
+    @Column(name = "trailer_url", nullable = false)
+    private String movieTrailer;
+
     @Column(name = "release_date")
     private LocalDate movieReleaseDate;
 

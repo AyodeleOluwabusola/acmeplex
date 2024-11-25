@@ -23,6 +23,7 @@ public class MovieRequest {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate releaseDate;
     private String rating;
+    private String trailerUrl;
 
     @NotNull(message = "Movie price is required")
     private Float price;
@@ -38,6 +39,7 @@ public class MovieRequest {
         movie.setMovieGenre(movieRequest.getGenre());
         movie.setMovieDuration(movieRequest.getDurationInMinutes());
         movie.setMovieReleaseDate(movieRequest.getReleaseDate());
+        movie.setMovieTrailer(movieRequest.getTrailerUrl());
         movie.setMovieRating(movieRequest.getRating());
         return movie;
     }
