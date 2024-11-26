@@ -4,13 +4,11 @@ import com.uofc.acmeplex.dto.request.ticket.TicketRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
-import com.uofc.acmeplex.entities.AcmePlexUser;
 import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.Theatre;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import com.uofc.acmeplex.entities.Ticket;
 import com.uofc.acmeplex.enums.BookingStatusEnum;
-import com.uofc.acmeplex.enums.UserTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.ITicketService;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
@@ -50,9 +48,6 @@ public class TicketService implements ITicketService {
     public IResponse issueTicket(TicketRequest request) {
 
         log.debug("Issuing ticket for user: {}", requestBean.getPrincipal());
-        AcmePlexUser user = userRepository.findByEmail(requestBean.getPrincipal())
-                .orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
-
         Showtime showtime = showtimeRepository.findById(request.getShowtimeId())
                 .orElseThrow(() -> new CustomException("Showtime not found", HttpStatus.NOT_FOUND));
 
@@ -80,7 +75,7 @@ public class TicketService implements ITicketService {
 
         // Create and save ticket
         Ticket ticket = new Ticket();
-        ticket.setUser(user);
+        ticket.setEmail(request.getEmail());
         ticket.setShowtime(showtime);
         ticket.setMovie(showtime.getMovie());
 
@@ -125,7 +120,8 @@ public class TicketService implements ITicketService {
         ticket.getReservedSeats().forEach((seat)-> seat.setTaken(false));
 
         //Credit 85%, remove 15% as cancellation fee for Ordinary Users, but credit 100% for Registered Users
-        if (Objects.equals(ticket.getUser().getUserType().getName(), UserTypeEnum.REGISTERED_USER.getName())){
+        boolean isRegisteredUser = userRepository.existsByEmail(ticket.getEmail());
+        if (isRegisteredUser){
             // Create a promoCode with 100% of the ticket price
             promotionCodeService.createPromotionCode(ticket.getMovie().getMoviePrice(), requestBean.getPrincipal());
         } else {

@@ -1,5 +1,6 @@
 package com.uofc.acmeplex.dto.request.ticket;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -12,6 +13,8 @@ public class TicketRequest {
     private Long showtimeId;
     @NotNull(message = "Theatre ID is required")
     private Long theatreId;
+    @NotBlank(message = "Email is required")
+    private String email;
     @NotNull(message = "Select seat(s)")
     private List<Long> seatIds;
 }

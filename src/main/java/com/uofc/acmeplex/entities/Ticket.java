@@ -20,10 +20,7 @@ import java.util.List;
 @Entity
 public class Ticket extends BaseEntity {
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ManyToOne
-    @JoinColumn(name = "user_fk", nullable = false)
-    private AcmePlexUser user;
+    private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne

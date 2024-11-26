@@ -40,14 +40,6 @@ public class MovieService implements IMovieService {
             throw new CustomException("Movie already exists", HttpStatus.CONFLICT);
         }
         Movie movie = MovieRequest.convertToEntity(movieRequest);
-//        List<Showtime> showtimes = new ArrayList<>();
-//        for (LocalDateTime time: movieRequest.getShowTimes()) {
-//            Showtime showtime = new Showtime();
-//            showtime.setMovie(movie);
-//            showtime.setStartTime(time);
-//            showtime.setTheatre();
-//            showtimes.add(showtime);
-//        }
         //Send email to all RUs
 
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, movieRepository.save(movie));
@@ -60,7 +52,7 @@ public class MovieService implements IMovieService {
 
         /**Only show movies that were create 24hours ago on the landing.
         This is make sure only RUs have access before then **/
-        Page<Movie> raiseRequests = movieRepository.findAllByActiveAndCreateDateGreaterThanEqual(pageable, false, LocalDateTime.now().minusHours(24));
+        Page<Movie> raiseRequests = movieRepository.findAllByActive(pageable, true);
         if (!raiseRequests.isEmpty()) {
             Map<String, Object> metaData = new HashMap<>();
             metaData.put("totalElements", raiseRequests.getTotalElements());
