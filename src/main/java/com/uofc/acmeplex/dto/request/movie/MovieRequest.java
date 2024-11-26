@@ -24,6 +24,7 @@ public class MovieRequest {
     private LocalDate releaseDate;
     private String rating;
     private String trailerUrl;
+    private String imageUrl;
 
     @NotNull(message = "Movie price is required")
     private Float price;
@@ -40,6 +41,7 @@ public class MovieRequest {
         movie.setMovieDuration(movieRequest.getDurationInMinutes());
         movie.setMovieReleaseDate(movieRequest.getReleaseDate());
         movie.setMovieTrailer(movieRequest.getTrailerUrl());
+        movie.setMovieImageUrl(movieRequest.getImageUrl());
         movie.setMovieRating(movieRequest.getRating());
         return movie;
     }
