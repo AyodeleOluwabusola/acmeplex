@@ -1,6 +1,7 @@
 package com.uofc.acmeplex.logic.services;
 
 import com.uofc.acmeplex.dto.request.TheatreSeatInfo;
+import com.uofc.acmeplex.dto.request.TheatreSeatStatusDTO;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
@@ -34,6 +35,12 @@ public class TheatreSeatService implements ITheatreSeatService {
     public IResponse fetchTheatresSeats(Pageable pageable, Long theatreId) {
         Page<TheatreSeat> theatreSeats = theatreSeatRepository.findAllByTheatreId(pageable, theatreId);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, TheatreSeatInfo.fromEntities(theatreSeats.getContent()));
+    }
+
+    @Override
+    public IResponse fetchSeatDistribution(Pageable pageable, Long theatreId) {
+        Page<TheatreSeatStatusDTO> theatreSeats = theatreSeatRepository.fetchSeatDistributionForShowtime(pageable, theatreId);
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, TheatreSeatInfo.fromResult(theatreSeats.getContent()));
     }
 
     public IResponse createSeatsForTheatre(Long theatreId, Map<String, Integer> rows) {

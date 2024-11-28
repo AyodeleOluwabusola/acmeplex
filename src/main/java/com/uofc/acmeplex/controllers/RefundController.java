@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("promo-code")
-public class PromotionCodeController {
+@RequestMapping("refund")
+public class RefundController {
 
 }

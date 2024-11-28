@@ -23,6 +23,7 @@ public class MovieRequest {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate releaseDate;
     private String rating;
+
     private String trailerUrl;
     private String imageUrl;
 

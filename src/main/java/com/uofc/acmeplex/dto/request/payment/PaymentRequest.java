@@ -19,6 +19,12 @@ public class PaymentRequest {
 
     private Float amount;
 
+    @NotBlank(message = "UseCase is required") //Invoice table
+    private String useCase;
+
+    @NotBlank(message = "Email address is required")
+    private String email;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/yyyy")
     @Pattern(regexp = "^(0[1-9]|1[0-2])/\\d{4}$", message = "Date must be in the format MM/yyyy")
     private String expiryDate;

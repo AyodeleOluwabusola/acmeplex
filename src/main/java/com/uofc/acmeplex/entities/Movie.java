@@ -38,16 +38,11 @@ public class Movie extends BaseEntity{
     @Column(name = "release_date")
     private LocalDate movieReleaseDate;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 4080)
     private String movieDescription;
 
     @Column(name = "price", nullable = false)
     private Float moviePrice;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany(mappedBy = "movie")
-    @Cascade(CascadeType.ALL)
-    private Set<Theatre> theatres;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "movie")

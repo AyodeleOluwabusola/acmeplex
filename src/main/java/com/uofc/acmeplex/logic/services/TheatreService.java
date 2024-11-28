@@ -20,8 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @RequiredArgsConstructor
 @Service
 public class TheatreService implements ITheatreService {
@@ -37,11 +35,8 @@ public class TheatreService implements ITheatreService {
             throw new CustomException("Theatre already exist", HttpStatus.CONFLICT);
         }
         Theatre theatre = TheatreInfo.mapToEntity(theatreInfo);
-        Optional<Movie> movie = movieRepository.findById(theatreInfo.getMovieId());
-        if (movie.isEmpty()){
-            throw new CustomException("Movie does not exist", HttpStatus.NOT_FOUND);
-        }
-        theatre.setMovie(movie.get());
+        Movie movie = movieRepository.findById(theatreInfo.getMovieId()).orElseThrow(() -> new CustomException("Movie not found", HttpStatus.NOT_FOUND));
+        theatre.setMovie(movie);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, theatreRepository.save(theatre));
     }
 

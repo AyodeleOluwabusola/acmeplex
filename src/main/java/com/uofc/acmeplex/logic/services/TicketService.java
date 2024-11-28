@@ -5,7 +5,6 @@ import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
 import com.uofc.acmeplex.entities.Showtime;
-import com.uofc.acmeplex.entities.Theatre;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import com.uofc.acmeplex.entities.Ticket;
 import com.uofc.acmeplex.enums.BookingStatusEnum;
@@ -19,12 +18,13 @@ import com.uofc.acmeplex.repository.UserRepository;
 import com.uofc.acmeplex.security.RequestBean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class TicketService implements ITicketService {
 
     private final TicketRepository ticketRepository;
 
-    private final PromotionCodeService promotionCodeService;
+    private final RefundCodeService refundCodeService;
 
     private final RequestBean requestBean;
 
@@ -51,11 +51,8 @@ public class TicketService implements ITicketService {
         Showtime showtime = showtimeRepository.findById(request.getShowtimeId())
                 .orElseThrow(() -> new CustomException("Showtime not found", HttpStatus.NOT_FOUND));
 
-        Theatre theatre = theatreRepository.findById(request.getTheatreId())
-                .orElseThrow(() -> new CustomException("Theatre not found", HttpStatus.NOT_FOUND));
-
         int reservedSeats = request.getSeatIds().size();
-        int size = theatre.getSeats().size();
+        int size = showtime.getTheatre().getSeats().size();
         if (reservedSeats > size * 0.1 ) {
             throw new CustomException("You are not allowed to reserve more than 10% of available seats", HttpStatus.BAD_REQUEST);
         }
@@ -66,11 +63,10 @@ public class TicketService implements ITicketService {
             throw new CustomException("One or more seats not found", HttpStatus.BAD_REQUEST);
         }
 
-        // Check seat availability
-        for (TheatreSeat seat : seats) {
-            if (seat.getTicket() != null && Objects.equals(seat.getTicket().getBookingStatus(), BookingStatusEnum.RESERVED)) {
-                throw new CustomException("Seat " + seat.getSeatRow() + seat.getSeatNumber() + " is already reserved", HttpStatus.BAD_REQUEST);
-            }
+        // Check seat availability :
+        List<Long> alreadyReservedSeats = theatreSeatRepository.findExistingTheatreSeatIds(request.getShowtimeId(), request.getSeatIds());
+        if (!alreadyReservedSeats.isEmpty()) {
+            throw new CustomException("One more selected seats(s) was already reserved", HttpStatus.BAD_REQUEST);
         }
 
         // Create and save ticket
@@ -81,11 +77,8 @@ public class TicketService implements ITicketService {
 
 
         // Assign the seats to the ticket
-        for (TheatreSeat seat : seats) {
-            seat.setTicket(ticket); // Link each seat to the ticket
-            seat.setTaken(true); // Mark the seat as taken
-        }
-        ticket.setReservedSeats(seats);
+        showtime.getTheatreSeats().addAll(seats);
+        ticket.setTicketSeats(seats.stream().map(TheatreSeat::getId).toList());
         ticket.setBookingStatus(BookingStatusEnum.RESERVED);
 
         
@@ -93,11 +86,8 @@ public class TicketService implements ITicketService {
     }
 
     public IResponse cancelTicket(Long ticketId) {
+
         // Fetch the ticket by its ID
-
-        //Check if showTime is 72hours prior to current time
-
-
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new CustomException("Ticket not found", HttpStatus.NOT_FOUND));
 
@@ -108,7 +98,9 @@ public class TicketService implements ITicketService {
 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime showtimeDateTime = ticket.getShowtime().getStartTime();
-        if (showtimeDateTime.isAfter(currentTime.plusHours(72))) {
+        //Check if showTime is 72hours prior to current time
+        log.debug("Calculated Time: {}", ChronoUnit.HOURS.between(currentTime, showtimeDateTime));
+        if (ChronoUnit.HOURS.between(currentTime, showtimeDateTime) > 72) {
             throw new CustomException("Cannot cancel ticket less than 72 hours before showtime", HttpStatus.BAD_REQUEST);
         }
 
@@ -117,16 +109,20 @@ public class TicketService implements ITicketService {
         ticket.setBookingStatus(BookingStatusEnum.CANCELLED);
 
         // Free up the seats
-        ticket.getReservedSeats().forEach((seat)-> seat.setTaken(false));
+        log.debug("SEATS TO CLEAR {}", ticket.getTicketSeats());
+        if (!ticket.getTicketSeats().isEmpty()) {
+            theatreSeatRepository.deleteShowTimSeatsBySeatIds(ticket.getTicketSeats());
+            ticket.getTicketSeats().clear();
+        }
 
         //Credit 85%, remove 15% as cancellation fee for Ordinary Users, but credit 100% for Registered Users
-        boolean isRegisteredUser = userRepository.existsByEmail(ticket.getEmail());
-        if (isRegisteredUser){
+        String email = requestBean.getPrincipal(); //Only registered users have a email has token with email in header vaue
+        if (StringUtils.isNotBlank(email)){
             // Create a promoCode with 100% of the ticket price
-            promotionCodeService.createPromotionCode(ticket.getMovie().getMoviePrice(), requestBean.getPrincipal());
+            refundCodeService.createRefundCode(ticket.getMovie().getMoviePrice(), email);
         } else {
             // Create a promoCode with 85% of the ticket price
-            promotionCodeService.createPromotionCode((float) (ticket.getMovie().getMoviePrice() * 0.85), requestBean.getPrincipal());
+            refundCodeService.createRefundCode((float) (ticket.getMovie().getMoviePrice() * 0.85), ticket.getEmail());
         }
 
         // Save the updated ticket

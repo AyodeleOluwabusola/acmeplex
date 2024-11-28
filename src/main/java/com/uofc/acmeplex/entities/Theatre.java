@@ -33,7 +33,4 @@ public class Theatre extends BaseEntity{
     @OneToMany(mappedBy = "theatre")
     private List<TheatreSeat> seats;
 
-    public int getTheatreSeatingCapacity() {
-        return seats != null ? seats.size() : 0;
-    }
 }

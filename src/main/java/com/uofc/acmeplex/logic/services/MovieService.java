@@ -1,5 +1,7 @@
 package com.uofc.acmeplex.logic.services;
 
+import com.uofc.acmeplex.config.AppProperties;
+import com.uofc.acmeplex.dto.request.mail.EmailMessage;
 import com.uofc.acmeplex.dto.request.movie.MovieRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
@@ -7,13 +9,18 @@ import com.uofc.acmeplex.dto.response.ResponseData;
 import com.uofc.acmeplex.entities.Movie;
 import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.Theatre;
+import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.IMovieService;
+import com.uofc.acmeplex.mail.EmailService;
 import com.uofc.acmeplex.repository.MovieRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
 import com.uofc.acmeplex.repository.TheatreRepository;
+import com.uofc.acmeplex.security.RequestBean;
 import com.uofc.acmeplex.util.CommonLogic;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MovieService implements IMovieService {
@@ -32,6 +40,9 @@ public class MovieService implements IMovieService {
     private final MovieRepository movieRepository;
     private final TheatreRepository theatreRepository;
     private final ShowTimeRepository showTimeRepository;
+    private final RequestBean requestBean;
+    private final AppProperties appProperties;
+    private final EmailService emailService;
 
     @Override
     public IResponse createMovie(MovieRequest movieRequest) {
@@ -40,7 +51,21 @@ public class MovieService implements IMovieService {
             throw new CustomException("Movie already exists", HttpStatus.CONFLICT);
         }
         Movie movie = MovieRequest.convertToEntity(movieRequest);
+
         //Send email to all RUs
+        EmailMessage emailMessage = new EmailMessage();
+        emailMessage.setMessageBody(appProperties.getMovieAnnouncedMessage());
+        emailMessage.setLinkUrl("http://localhost:8080/movies");
+        emailMessage.setRecipients(new String[]{"oluwabusola.ayodele@gmail.com"});
+        emailMessage.setMessageBody(appProperties.getMovieAnnouncedMessage());
+        emailMessage.setSubject("Report Request Received");
+
+        emailMessage.setMessageType("EMAIL");
+        var subType = MessageSubTypeEnum.BASIC_EMAIL;
+
+        emailMessage.setMessageSubType(subType);
+//        emailMessage.setFirstName(user.getFirstName());
+        emailService.sendSimpleMail(emailMessage);
 
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, movieRepository.save(movie));
     }
@@ -51,8 +76,16 @@ public class MovieService implements IMovieService {
         response.setResponse(ResponseCodeEnum.SUCCESS);
 
         /**Only show movies that were create 24hours ago on the landing.
-        This is make sure only RUs have access before then **/
-        Page<Movie> raiseRequests = movieRepository.findAllByActive(pageable, true);
+         This is make sure only RUs have access before then **/
+        log.debug("TIME HERE IS {}", LocalDateTime.now().minusHours(5));
+        Page<Movie> raiseRequests = null;
+        if (StringUtils.isNotBlank(requestBean.getPrincipal())) {
+            //Only Registered User would have an email in header
+            raiseRequests = movieRepository.findAllByActive(pageable, true);
+        } else {
+            //Only show movies that were create 5hours ago on the landing for Ordinary Users
+            raiseRequests = movieRepository.findAllByActiveAndCreateDateLessThanEqual(pageable, true, LocalDateTime.now().minusHours(5));
+        }
         if (!raiseRequests.isEmpty()) {
             Map<String, Object> metaData = new HashMap<>();
             metaData.put("totalElements", raiseRequests.getTotalElements());

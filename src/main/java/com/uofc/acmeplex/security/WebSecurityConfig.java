@@ -35,10 +35,10 @@ public class WebSecurityConfig {
                     authorizationManagerRequestMatcherRegistry.requestMatchers("/actuator/**").permitAll()
                             .requestMatchers("/user/**").permitAll()
                             .requestMatchers("/movie/**").permitAll()
-                            .requestMatchers("/movie/{movieId}/attach-theatres").permitAll()
-                            .requestMatchers("/theatre").permitAll()
-                            .requestMatchers("/theatre/{theatreId}/create-seats").permitAll()
-                            .requestMatchers("/swagger-ui/**","/swagger-ui.html/**", "/swagger-resources/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
+                            .requestMatchers("/ticket/**").permitAll()
+                            .requestMatchers("/theatre/**").permitAll()
+                            .requestMatchers("/refund/**").permitAll()
+                            .requestMatchers("/theatre-seat/**").permitAll()
                             .anyRequest().authenticated();
                 })
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->

@@ -3,7 +3,6 @@ package com.uofc.acmeplex.dto.request;
 import com.uofc.acmeplex.entities.Theatre;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,11 +17,10 @@ public class TheatreInfo {
     @NotBlank(message = "Theatre name is required")
     private String name;
 
+    private Long movieId;
+
     @NotBlank(message = "Theatre location is required")
     private String location;
-
-    @NotNull(message = "Movie ID is required")
-    private Long movieId;
 
     private List<TheatreSeat> theatreSeats;
 
@@ -30,6 +28,7 @@ public class TheatreInfo {
         return TheatreInfo.builder()
                 .id(theatre.getId())
                 .name(theatre.getName())
+                .movieId(theatre.getMovie().getId())
                 .location(theatre.getLocation())
                 .build();
     }

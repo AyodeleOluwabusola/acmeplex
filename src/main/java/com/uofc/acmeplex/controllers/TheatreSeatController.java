@@ -30,4 +30,9 @@ public class TheatreSeatController {
     public IResponse fetchSeatsForTheatre(Pageable pageable, @RequestParam Long theatreId) {
         return theatreSeatService.fetchTheatresSeats(pageable, theatreId);
     }
+
+    @GetMapping("seat-distribution")
+    public IResponse fetchSeatDistribution(Pageable pageable, @RequestParam Long showtimeId) {
+        return theatreSeatService.fetchSeatDistribution(pageable, showtimeId);
+    }
 }

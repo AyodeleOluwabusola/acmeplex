@@ -11,8 +11,6 @@ public class TicketRequest {
 
     @NotNull(message = "Showtime ID is required")
     private Long showtimeId;
-    @NotNull(message = "Theatre ID is required")
-    private Long theatreId;
     @NotBlank(message = "Email is required")
     private String email;
     @NotNull(message = "Select seat(s)")

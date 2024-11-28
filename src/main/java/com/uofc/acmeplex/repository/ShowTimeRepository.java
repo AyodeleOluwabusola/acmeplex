@@ -12,5 +12,6 @@ import java.util.Optional;
 public interface ShowTimeRepository extends JpaRepository<Showtime, Long> {
 
     Optional<Showtime> findByIdAndTheatreId(Long movieId, Long theatreId);
+
     Page<Showtime> findAllByMovieIdAndTheatreId(Pageable pageable, Long movieId, Long theatreId);
 }
