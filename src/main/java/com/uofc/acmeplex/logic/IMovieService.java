@@ -12,7 +12,7 @@ public interface IMovieService {
 
     //SOLID principle: Dependency Inversion (Classes depending on abstractions)
     IResponse createMovie(MovieRequest movieRequest);
-    IResponse retrieveMovies(Pageable pageable);
+    IResponse retrieveMovies(Pageable pageable, String name);
 
     IResponse attachMovieToTheatres(Long movieId, Map<Long, List<LocalDateTime>> showTimes);
 }

@@ -14,5 +14,5 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     Optional<Movie> findByMovieName(String name);
     Page<Movie> findAllByActiveAndCreateDateLessThanEqual(Pageable id, boolean active, LocalDateTime valid);
-    Page<Movie> findAllByActive(Pageable id, boolean active);
+    Page<Movie> findAllByActiveAndMovieName(Pageable id, boolean active, String movieName);
 }

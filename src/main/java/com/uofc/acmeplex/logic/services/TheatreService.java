@@ -5,7 +5,6 @@ import com.uofc.acmeplex.dto.request.TheatreInfo;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
-import com.uofc.acmeplex.entities.Movie;
 import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.Theatre;
 import com.uofc.acmeplex.exception.CustomException;
@@ -13,7 +12,6 @@ import com.uofc.acmeplex.logic.ITheatreService;
 import com.uofc.acmeplex.repository.MovieRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
 import com.uofc.acmeplex.repository.TheatreRepository;
-import com.uofc.acmeplex.repository.TheatreSeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +24,6 @@ public class TheatreService implements ITheatreService {
 
     private final TheatreRepository theatreRepository;
     private final ShowTimeRepository showTimeRepository;
-    private final TheatreSeatRepository theatreSeatRepository;
     private final MovieRepository movieRepository;
 
     @Override
@@ -35,8 +32,6 @@ public class TheatreService implements ITheatreService {
             throw new CustomException("Theatre already exist", HttpStatus.CONFLICT);
         }
         Theatre theatre = TheatreInfo.mapToEntity(theatreInfo);
-        Movie movie = movieRepository.findById(theatreInfo.getMovieId()).orElseThrow(() -> new CustomException("Movie not found", HttpStatus.NOT_FOUND));
-        theatre.setMovie(movie);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, theatreRepository.save(theatre));
     }
 
@@ -48,7 +43,7 @@ public class TheatreService implements ITheatreService {
 
     @Override
     public IResponse fetchTheatresByMovie(Pageable pageable, Long movieId) {
-        Page<Theatre> theatres = theatreRepository.findAllByMovieId(pageable, movieId);
+        Page<Theatre> theatres = showTimeRepository.findAllTheatresByMovie(pageable, movieId);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, TheatreInfo.fromEntities(theatres.getContent()));
     }
 

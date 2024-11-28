@@ -80,7 +80,7 @@ public class MovieService implements IMovieService {
     }
 
     @Override
-    public IResponse retrieveMovies(Pageable pageable) {
+    public IResponse retrieveMovies(Pageable pageable, String name) {
         ResponseData<Map<String, Object>> response = new ResponseData<>();
         response.setResponse(ResponseCodeEnum.SUCCESS);
 
@@ -90,7 +90,7 @@ public class MovieService implements IMovieService {
         Page<Movie> raiseRequests = null;
         if (StringUtils.isNotBlank(requestBean.getPrincipal())) {
             //Only Registered User would have an email in header
-            raiseRequests = movieRepository.findAllByActive(pageable, true);
+            raiseRequests = movieRepository.findAllByActiveAndMovieName(pageable, true, name);
         } else {
             //Only show movies that were create 5hours ago on the landing for Ordinary Users
             raiseRequests = movieRepository.findAllByActiveAndCreateDateLessThanEqual(pageable, true, LocalDateTime.now().minusHours(5));

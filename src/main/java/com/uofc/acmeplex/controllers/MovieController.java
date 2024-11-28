@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -27,8 +28,8 @@ public class MovieController {
     }
 
     @GetMapping("fetch")
-    public IResponse fetchMovies(Pageable pageable) {
-        return movieService.retrieveMovies(pageable);
+    public IResponse fetchMovies(Pageable pageable, @RequestParam(name = "name", required = false) String name) {
+        return movieService.retrieveMovies(pageable, name);
     }
 
     @PostMapping("/{movieId}/attach-theatres")

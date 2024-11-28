@@ -17,8 +17,6 @@ public class TheatreInfo {
     @NotBlank(message = "Theatre name is required")
     private String name;
 
-    private Long movieId;
-
     @NotBlank(message = "Theatre location is required")
     private String location;
 
@@ -28,7 +26,6 @@ public class TheatreInfo {
         return TheatreInfo.builder()
                 .id(theatre.getId())
                 .name(theatre.getName())
-                .movieId(theatre.getMovie().getId())
                 .location(theatre.getLocation())
                 .build();
     }
