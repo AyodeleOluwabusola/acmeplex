@@ -1,5 +1,6 @@
 package com.uofc.acmeplex.logic.services;
 
+import com.uofc.acmeplex.dto.request.mail.EmailMessage;
 import com.uofc.acmeplex.dto.request.ticket.TicketRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
@@ -8,10 +9,11 @@ import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import com.uofc.acmeplex.entities.Ticket;
 import com.uofc.acmeplex.enums.BookingStatusEnum;
+import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.ITicketService;
+import com.uofc.acmeplex.mail.EmailService;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
-import com.uofc.acmeplex.repository.TheatreRepository;
 import com.uofc.acmeplex.repository.TheatreSeatRepository;
 import com.uofc.acmeplex.repository.TicketRepository;
 import com.uofc.acmeplex.repository.UserRepository;
@@ -25,6 +27,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,7 +41,7 @@ public class TicketService implements ITicketService {
 
     private final TheatreSeatRepository theatreSeatRepository;
 
-    private final TheatreRepository theatreRepository;
+    private final EmailService emailService;
 
     private final TicketRepository ticketRepository;
 
@@ -80,19 +84,38 @@ public class TicketService implements ITicketService {
         showtime.getTheatreSeats().addAll(seats);
         ticket.setTicketSeats(seats.stream().map(TheatreSeat::getId).toList());
         ticket.setBookingStatus(BookingStatusEnum.RESERVED);
+        ticket.setCode("TKT-" +refundCodeService.generateUniqueCode());
 
         //Send Email with ticket code
+        EmailMessage emailMessage = new EmailMessage();
+        emailMessage.setFirstName(request.getEmail());
+        emailMessage.setRecipient(request.getEmail());
+        emailMessage.setMessageType("EMAIL");
+        emailMessage.setMessageBody("Ticket purchase");
+        emailMessage.setSubject("Ticket purchase");
+        var subType = MessageSubTypeEnum.TICKER_PURCHASE;
+
+        emailMessage.setMessageSubType(subType);
+        emailMessage.setMovie(showtime.getMovie());
+        emailMessage.setSeats(convertSeatsToString(seats));
+        emailMessage.setTicketCode(ticket.getCode());
+        CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
     }
 
-    public IResponse cancelTicket(Long ticketId) {
+
+    public IResponse cancelTicket(String ticketCode, String emailAddress) {
 
         //Use ticket code
         // compare email in token with email in request
 
         // Fetch the ticket by its ID
-        Ticket ticket = ticketRepository.findById(ticketId)
+        Ticket ticket = ticketRepository.findByCode(ticketCode)
                 .orElseThrow(() -> new CustomException("Ticket not found", HttpStatus.NOT_FOUND));
+
+        if (!ticket.getEmail().equals(emailAddress)) {
+            throw new CustomException("Ticket was not purchased by you!", HttpStatus.NOT_ACCEPTABLE);
+        }
 
         // Check if the ticket is already canceled
         if (ticket.getBookingStatus() == BookingStatusEnum.CANCELLED) {
@@ -106,7 +129,6 @@ public class TicketService implements ITicketService {
         if (ChronoUnit.HOURS.between(currentTime, showtimeDateTime) > 72) {
             throw new CustomException("Cannot cancel ticket less than 72 hours before showtime", HttpStatus.BAD_REQUEST);
         }
-
 
         // Change the status to CANCELED
         ticket.setBookingStatus(BookingStatusEnum.CANCELLED);
@@ -132,4 +154,15 @@ public class TicketService implements ITicketService {
         ticketRepository.save(ticket);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, "Ticket canceled successfully");
     }
+
+    public String convertSeatsToString(List<TheatreSeat> seats) {
+        if (seats == null || seats.isEmpty()) {
+            return "";
+        }
+
+        return seats.stream()
+                .map(seat -> seat.getSeatRow() + seat.getSeatNumber())
+                .collect(Collectors.joining(", "));
+    }
+
 }

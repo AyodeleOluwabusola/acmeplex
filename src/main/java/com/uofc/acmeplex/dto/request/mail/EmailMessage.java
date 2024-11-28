@@ -1,5 +1,6 @@
 package com.uofc.acmeplex.dto.request.mail;
 
+import com.uofc.acmeplex.entities.Movie;
 import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import lombok.Data;
 import lombok.ToString;
@@ -27,6 +28,10 @@ public class EmailMessage implements Serializable {
     private String linkUrl;
     private String firstName;
     private String totalAmount;
+    private String ticketCode;
+    private String seats;
+    private String movieName;
     private Map<String, String> details;
+    private Movie movie;
 
 }

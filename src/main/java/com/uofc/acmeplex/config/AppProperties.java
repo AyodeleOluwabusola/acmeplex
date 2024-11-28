@@ -16,9 +16,9 @@ public class AppProperties {
     private Environment env;
 
     private String movieAnnouncedMessage = """
-            We are pleased to inform you that we have successfully received your request for a corporate filing. Our team is now ready to begin processing it.
+            We are pleased to inform you that a thrilling new movie has just hit the screens at your favorite theatre! Our team is delighted to share this exciting update with you..
 
-            Rest assured, we will keep you updated on the progress and notify you once the report is ready for download. If you have any additional information or special instructions, please feel free to reach us at support@ctbycoronation.com.
+            Rest assured, we will keep you updated on upcoming releases and special screenings to ensure you never miss out on cinematic experiences. If you have any preferences or would like to share feedback, please feel free to reach us at support@acmeplex.com.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .
 
-            Thank you for choosing Captable by Coronation!""";
+            Thank you for choosing Acmeplex!""";
 }

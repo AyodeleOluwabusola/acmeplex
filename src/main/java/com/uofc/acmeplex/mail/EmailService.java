@@ -62,25 +62,26 @@ public class EmailService  {
 
             mimeMessageHelper.setSubject(mail.getSubject());
             mimeMessageHelper.setFrom(sender);
-            mimeMessageHelper.setTo((mail.getRecipients() != null && mail.getRecipients().length > 0) ? mail.getRecipients() : new String[] {mail.getRecipient()});
+            log.debug("EMAIL HERE: {}", mail.getRecipient());
+            mimeMessageHelper.setTo(new String[] {mail.getRecipient()});
 
             Map<String, Object> map = new HashMap<>();
-            map.put("firstName", Optional.ofNullable(mail.getFirstName()).orElse(" "));
+            map.put("title", mail.getMovie() != null? mail.getMovie().getMovieName() : " ");
+            map.put("firstName", Optional.ofNullable(mail.getFirstName()).orElse(".."));
             map.put("message", mail.getMessageBody());
             map.put("action", Optional.ofNullable(mail.getAction()).orElse(".."));
             map.put("link", Optional.ofNullable(mail.getLinkUrl()).orElse("#"));
-            map.put("amount", Optional.ofNullable(mail.getTotalAmount()).orElse(""));
-            map.put("requestTime", Optional.ofNullable(mail.getRequestTime()).orElse(".."));
+            map.put("theatre", "Acmeplex");
+            map.put("genre", mail.getMovie() != null? mail.getMovie().getMovieGenre() : " ");
+            map.put("duration", mail.getMovie() != null? mail.getMovie().getMovieDuration() : " ");
+            map.put("seats", Optional.ofNullable(mail.getSeats()).orElse(".."));
+            map.put("ticketCode", Optional.ofNullable(mail.getTicketCode()).orElse(".."));
+            map.put("supportEmail", "support@acmeplex.com");
             map.put("details", getDetailDesign(mail.getDetails()));
 
             String content = getContentFromTemplate(map, mail.getMessageSubType());
             mimeMessageHelper.setText(content, true);
-
-            mimeMessageHelper.addInline("fundgridImg", getFilePathResource(Constant.ACMEPLEX_ICON_PATH), IMAGE_FORMAT);
-
-            if (StringUtils.isNotBlank(mail.getMessageSubType().getActionImgName())) {
-                mimeMessageHelper.addInline("actionImg", getFilePathResource(mail.getMessageSubType().getActionImgName()), IMAGE_FORMAT);
-            }
+            mimeMessageHelper.addInline("acmeplexLogo", getFilePathResource(Constant.ACMEPLEX_ICON_PATH), IMAGE_FORMAT);
 
             javaMailSender.send(mimeMessageHelper.getMimeMessage());
         } catch (Exception e) {

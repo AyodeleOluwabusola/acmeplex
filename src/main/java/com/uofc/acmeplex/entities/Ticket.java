@@ -32,6 +32,9 @@ public class Ticket extends BaseEntity {
     @JoinColumn(name = "showtime_fk", nullable = false)
     private Showtime showtime;
 
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private BookingStatusEnum bookingStatus = BookingStatusEnum.PENDING; // PENDING, PAID, CANCELLED

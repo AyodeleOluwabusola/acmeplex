@@ -7,5 +7,5 @@ public interface ITicketService {
 
     //SOLID principle: Dependency Inversion (Classes depending on abstractions)
     IResponse issueTicket(TicketRequest ticketRequest);
-    IResponse cancelTicket(Long ticketId) ;
+    IResponse cancelTicket(String ticketCode, String email) ;
 }

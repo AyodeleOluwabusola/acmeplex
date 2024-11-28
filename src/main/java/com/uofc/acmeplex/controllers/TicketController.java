@@ -25,7 +25,7 @@ public class TicketController {
     }
 
     @GetMapping("cancel")
-    public IResponse cancelTicket(@RequestParam(name = "ticketId") Long ticketId) {
-        return ticketService.cancelTicket(ticketId);
+    public IResponse cancelTicket(@RequestParam(name = "ticketCode") String ticketCode, @RequestParam(name = "email") String email) {
+        return ticketService.cancelTicket(ticketCode, email);
     }
 }

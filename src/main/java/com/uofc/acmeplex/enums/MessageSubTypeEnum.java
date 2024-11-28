@@ -4,8 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum MessageSubTypeEnum {
-    WELCOME("welcome.flth", "images/acmeplex-logo.png"),
-    BASIC_EMAIL("welcome.flth", "images/acmeplex-logo.png"),
+    WELCOME("movie-alert.flth", "images/acmeplex-logo.png"),
+    NEW_MOVIE_ALERT("movie-alert.flth", "images/acmeplex-logo.png"),
+    TICKER_PURCHASE("ticket-purchase.flth", "images/acmeplex-logo.png"),
     ;
 
     private String templateName;

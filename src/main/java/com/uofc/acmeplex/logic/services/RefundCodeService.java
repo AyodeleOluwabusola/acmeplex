@@ -54,7 +54,7 @@ public class RefundCodeService {
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, refundCodeRepository.save(refundCode));
     }
 
-    public static String generateUniqueCode() {
+    public String generateUniqueCode() {
         Random random = new Random();
         StringBuilder code = new StringBuilder(CODE_LENGTH);
         for (int i = 0; i < CODE_LENGTH; i++) {

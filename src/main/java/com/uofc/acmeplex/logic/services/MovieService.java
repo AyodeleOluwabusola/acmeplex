@@ -1,6 +1,7 @@
 package com.uofc.acmeplex.logic.services;
 
 import com.uofc.acmeplex.config.AppProperties;
+import com.uofc.acmeplex.dto.request.IUserDetails;
 import com.uofc.acmeplex.dto.request.mail.EmailMessage;
 import com.uofc.acmeplex.dto.request.movie.MovieRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
@@ -16,6 +17,7 @@ import com.uofc.acmeplex.mail.EmailService;
 import com.uofc.acmeplex.repository.MovieRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
 import com.uofc.acmeplex.repository.TheatreRepository;
+import com.uofc.acmeplex.repository.UserRepository;
 import com.uofc.acmeplex.security.RequestBean;
 import com.uofc.acmeplex.util.CommonLogic;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +33,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class MovieService implements IMovieService {
+    private final UserRepository userRepository;
 
     private final MovieRepository movieRepository;
     private final TheatreRepository theatreRepository;
@@ -52,20 +56,25 @@ public class MovieService implements IMovieService {
         }
         Movie movie = MovieRequest.convertToEntity(movieRequest);
 
-        //Send email to all RUs
-        EmailMessage emailMessage = new EmailMessage();
-        emailMessage.setMessageBody(appProperties.getMovieAnnouncedMessage());
-        emailMessage.setLinkUrl("http://localhost:8080/movies");
-        emailMessage.setRecipients(new String[]{"oluwabusola.ayodele@gmail.com"});
-        emailMessage.setMessageBody(appProperties.getMovieAnnouncedMessage());
-        emailMessage.setSubject("Report Request Received");
+        //Retrieve all RUs
+        List<IUserDetails> allRegisteredUsers = userRepository.findAllEmailsAndFirstName();
+        for (IUserDetails userDetails : allRegisteredUsers) {
+            log.debug("User Details: {}", userDetails);
+            //Send email to all RUs
+            EmailMessage emailMessage = new EmailMessage();
+            emailMessage.setMessageBody(appProperties.getMovieAnnouncedMessage());
+            emailMessage.setLinkUrl("http://localhost:8080/movies");
+            emailMessage.setRecipients(allRegisteredUsers.stream().map(IUserDetails::getEmail).toArray(String[]::new));
+            emailMessage.setSubject("Exciting News! A New Movie is Now Showing in Theatres!");
+            emailMessage.setFirstName(userDetails.getFirstName());
+            emailMessage.setRecipient(userDetails.getEmail());
+            emailMessage.setMessageType("EMAIL");
+            var subType = MessageSubTypeEnum.NEW_MOVIE_ALERT;
 
-        emailMessage.setMessageType("EMAIL");
-        var subType = MessageSubTypeEnum.BASIC_EMAIL;
-
-        emailMessage.setMessageSubType(subType);
-//        emailMessage.setFirstName(user.getFirstName());
-        emailService.sendSimpleMail(emailMessage);
+            emailMessage.setMessageSubType(subType);
+            emailMessage.setMovie(movie);
+            CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
+        }
 
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, movieRepository.save(movie));
     }
