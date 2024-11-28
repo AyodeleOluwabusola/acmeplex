@@ -81,11 +81,14 @@ public class TicketService implements ITicketService {
         ticket.setTicketSeats(seats.stream().map(TheatreSeat::getId).toList());
         ticket.setBookingStatus(BookingStatusEnum.RESERVED);
 
-        
+        //Send Email with ticket code
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
     }
 
     public IResponse cancelTicket(Long ticketId) {
+
+        //Use ticket code
+        // compare email in token with email in request
 
         // Fetch the ticket by its ID
         Ticket ticket = ticketRepository.findById(ticketId)
