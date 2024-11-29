@@ -108,7 +108,7 @@ public class MovieService implements IMovieService {
         return response;
     }
 
-    public IResponse attachMovieToTheatres(Long movieId, Map<Long, List<LocalDateTime>> showTimes) {
+    public IResponse attachTheatreShowtimesToMovie(Long movieId, Map<Long, List<LocalDateTime>> showTimes) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new CustomException("Movie not found", HttpStatus.NOT_FOUND));
 

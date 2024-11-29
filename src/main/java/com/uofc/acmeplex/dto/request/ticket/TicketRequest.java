@@ -15,4 +15,6 @@ public class TicketRequest {
     private String email;
     @NotNull(message = "Select seat(s)")
     private List<Long> seatIds;
+    private String refundCode;
+    private String paymentReference;
 }

@@ -5,6 +5,7 @@ import com.uofc.acmeplex.dto.request.ticket.TicketRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
+import com.uofc.acmeplex.entities.RefundCode;
 import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import com.uofc.acmeplex.entities.Ticket;
@@ -13,6 +14,8 @@ import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.ITicketService;
 import com.uofc.acmeplex.mail.EmailService;
+import com.uofc.acmeplex.repository.InvoiceRepository;
+import com.uofc.acmeplex.repository.RefundCodeRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
 import com.uofc.acmeplex.repository.TheatreSeatRepository;
 import com.uofc.acmeplex.repository.TicketRepository;
@@ -47,6 +50,10 @@ public class TicketService implements ITicketService {
 
     private final RefundCodeService refundCodeService;
 
+    private final RefundCodeRepository refundCodeRepository;
+
+    private final InvoiceRepository invoiceRepository;
+
     private final RequestBean requestBean;
 
     public IResponse issueTicket(TicketRequest request) {
@@ -71,6 +78,19 @@ public class TicketService implements ITicketService {
         List<Long> alreadyReservedSeats = theatreSeatRepository.findExistingTheatreSeatIds(request.getShowtimeId(), request.getSeatIds());
         if (!alreadyReservedSeats.isEmpty()) {
             throw new CustomException("One more selected seats(s) was already reserved", HttpStatus.BAD_REQUEST);
+        }
+
+        RefundCode refundCode = refundCodeRepository.findByCode(request.getRefundCode())
+                .orElseThrow(() -> new CustomException("Refund code not found", HttpStatus.NOT_FOUND));
+
+        Float amount = 0F;
+        if (StringUtils.isNotBlank(request.getPaymentReference())) {
+             amount = invoiceRepository.findByPaymentReference(request.getPaymentReference())
+                    .orElseThrow(() -> new CustomException("Payment reference not found", HttpStatus.NOT_FOUND))
+                     .getAmount();
+        }
+        if ((refundCode.getBalance() + amount) < showtime.getMovie().getMoviePrice()) {
+            throw new CustomException("Insufficient funds to purchase movie ticket", HttpStatus.BAD_REQUEST);
         }
 
         // Create and save ticket
@@ -105,9 +125,6 @@ public class TicketService implements ITicketService {
 
 
     public IResponse cancelTicket(String ticketCode, String emailAddress) {
-
-        //Use ticket code
-        // compare email in token with email in request
 
         // Fetch the ticket by its ID
         Ticket ticket = ticketRepository.findByCode(ticketCode)

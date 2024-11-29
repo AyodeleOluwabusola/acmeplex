@@ -11,9 +11,9 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
-@Table(name = "payment")
+@Table(name = "card")
 @Entity
-public class Payment extends BaseEntity{
+public class Card extends BaseEntity{
 
     @Enumerated(EnumType.STRING)
     @Column(name = "card_type")
@@ -32,7 +32,7 @@ public class Payment extends BaseEntity{
     private String cvv;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private AcmePlexUser user;
 
 }

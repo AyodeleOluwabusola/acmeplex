@@ -38,6 +38,7 @@ public class WebSecurityConfig {
                             .requestMatchers("/ticket/**").permitAll()
                             .requestMatchers("/theatre/**").permitAll()
                             .requestMatchers("/refund/**").permitAll()
+                            .requestMatchers("/payment/**").permitAll()
                             .requestMatchers("/theatre-seat/**").permitAll()
                             .anyRequest().authenticated();
                 })

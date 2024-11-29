@@ -33,9 +33,9 @@ public class MovieController {
     }
 
     @PostMapping("/{movieId}/attach-theatres")
-    public IResponse attachMovieToTheatres(@PathVariable Long movieId,
-                                                        @RequestBody @Valid AttachTheatreRequest request) {
-        return movieService.attachMovieToTheatres(movieId, request.getShowTimes());
+    public IResponse attachTheatreShowtimesToMovie(@PathVariable Long movieId,
+                                                   @RequestBody @Valid AttachTheatreRequest request) {
+        return movieService.attachTheatreShowtimesToMovie(movieId, request.getShowTimes());
     }
 
 }

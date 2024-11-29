@@ -14,5 +14,5 @@ public interface IMovieService {
     IResponse createMovie(MovieRequest movieRequest);
     IResponse retrieveMovies(Pageable pageable, String name);
 
-    IResponse attachMovieToTheatres(Long movieId, Map<Long, List<LocalDateTime>> showTimes);
+    IResponse attachTheatreShowtimesToMovie(Long movieId, Map<Long, List<LocalDateTime>> showTimes);
 }

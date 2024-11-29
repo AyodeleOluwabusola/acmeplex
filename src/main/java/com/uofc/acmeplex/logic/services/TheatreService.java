@@ -43,7 +43,7 @@ public class TheatreService implements ITheatreService {
 
     @Override
     public IResponse fetchTheatresByMovie(Pageable pageable, Long movieId) {
-        Page<Theatre> theatres = showTimeRepository.findAllTheatresByMovie(pageable, movieId);
+        Page<Theatre> theatres = theatreRepository.findAllTheatresByMovie(pageable, movieId);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, TheatreInfo.fromEntities(theatres.getContent()));
     }
 

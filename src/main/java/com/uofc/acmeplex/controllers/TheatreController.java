@@ -26,7 +26,7 @@ public class TheatreController {
     }
 
     @GetMapping("fetch-all")
-    public IResponse fetchTheatres(Pageable pageable) {
+    public IResponse fetchAllTheatres(Pageable pageable) {
         return theatreService.fetchTheatres(pageable);
     }
 

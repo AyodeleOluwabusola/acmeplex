@@ -5,6 +5,7 @@ import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
 import com.uofc.acmeplex.entities.RefundCode;
 import com.uofc.acmeplex.exception.CustomException;
+import com.uofc.acmeplex.logic.IRefundService;
 import com.uofc.acmeplex.repository.RefundCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import java.util.Random;
 
 @RequiredArgsConstructor
 @Service
-public class RefundCodeService {
+public class RefundCodeService implements IRefundService {
 
     private final RefundCodeRepository refundCodeRepository;
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -40,7 +41,8 @@ public class RefundCodeService {
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, refundCodeRepository.save(refundCode));
     }
 
-    public IResponse applyRefundCode(String code) {
+    @Override
+    public IResponse validateRefundCode(String code) {
         // Check if the Refund code exists
         RefundCode refundCode = refundCodeRepository.findByCode(code)
                 .orElseThrow(() -> new CustomException("Refund code not found", HttpStatus.NOT_FOUND));
@@ -51,7 +53,7 @@ public class RefundCodeService {
             throw new CustomException("Refund code is not valid or has expired", HttpStatus.BAD_REQUEST);
         }
 
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, refundCodeRepository.save(refundCode));
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, refundCode);
     }
 
     public String generateUniqueCode() {
