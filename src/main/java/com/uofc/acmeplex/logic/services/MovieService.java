@@ -56,6 +56,11 @@ public class MovieService implements IMovieService {
         }
         Movie movie = MovieRequest.convertToEntity(movieRequest);
 
+        sendMovieAlertToAllRegisteredUsers(movie);
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, movieRepository.save(movie));
+    }
+
+    private void sendMovieAlertToAllRegisteredUsers(Movie movie) {
         //Retrieve all RUs
         List<IUserDetails> allRegisteredUsers = userRepository.findAllEmailsAndFirstName();
         for (IUserDetails userDetails : allRegisteredUsers) {
@@ -63,7 +68,6 @@ public class MovieService implements IMovieService {
             //Send email to all RUs
             EmailMessage emailMessage = new EmailMessage();
             emailMessage.setMessageBody(appProperties.getMovieAnnouncedMessage());
-            emailMessage.setLinkUrl("http://localhost:8080/movies");
             emailMessage.setRecipients(allRegisteredUsers.stream().map(IUserDetails::getEmail).toArray(String[]::new));
             emailMessage.setSubject("Exciting News! A New Movie is Now Showing in Theatres!");
             emailMessage.setFirstName(userDetails.getFirstName());
@@ -75,8 +79,6 @@ public class MovieService implements IMovieService {
             emailMessage.setMovie(movie);
             CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
         }
-
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, movieRepository.save(movie));
     }
 
     @Override

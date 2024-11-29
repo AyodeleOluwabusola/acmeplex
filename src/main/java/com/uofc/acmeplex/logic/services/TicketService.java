@@ -107,6 +107,11 @@ public class TicketService implements ITicketService {
         ticket.setCode("TKT-" +refundCodeService.generateUniqueCode());
 
         //Send Email with ticket code
+        sendTicketConfirmationEmail(request, showtime, seats, ticket);
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
+    }
+
+    private void sendTicketConfirmationEmail(TicketRequest request, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
         EmailMessage emailMessage = new EmailMessage();
         emailMessage.setFirstName(request.getEmail());
         emailMessage.setRecipient(request.getEmail());
@@ -120,7 +125,6 @@ public class TicketService implements ITicketService {
         emailMessage.setSeats(convertSeatsToString(seats));
         emailMessage.setTicketCode(ticket.getCode());
         CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
     }
 
 

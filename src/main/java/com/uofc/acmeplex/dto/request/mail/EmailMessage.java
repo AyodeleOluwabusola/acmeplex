@@ -15,23 +15,24 @@ public class EmailMessage implements Serializable {
     private static final long serialVersionUID = -8803978232945381657L;
 
     private String messageBody;
-    private String postMessage;
     private String subject;
     private String messageType;
     private String recipient;
     private String[] recipients;
-    private String source;
-    private String code;
-    private String requestTime;
     private MessageSubTypeEnum messageSubType = MessageSubTypeEnum.WELCOME;
-    private String action;
-    private String linkUrl;
     private String firstName;
-    private String totalAmount;
     private String ticketCode;
     private String seats;
     private String movieName;
     private Map<String, String> details;
     private Movie movie;
+
+    //Payment
+    private String paymentReference;
+    private String currentDate;
+    private String totalAmount;
+    private String cardType;
+    private String cardHolderName;
+    private String billingAddress;
 
 }

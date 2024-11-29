@@ -23,6 +23,7 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -69,8 +70,6 @@ public class EmailService  {
             map.put("title", mail.getMovie() != null? mail.getMovie().getMovieName() : " ");
             map.put("firstName", Optional.ofNullable(mail.getFirstName()).orElse(".."));
             map.put("message", mail.getMessageBody());
-            map.put("action", Optional.ofNullable(mail.getAction()).orElse(".."));
-            map.put("link", Optional.ofNullable(mail.getLinkUrl()).orElse("#"));
             map.put("theatre", "Acmeplex");
             map.put("genre", mail.getMovie() != null? mail.getMovie().getMovieGenre() : " ");
             map.put("duration", mail.getMovie() != null? mail.getMovie().getMovieDuration() : " ");
@@ -79,6 +78,9 @@ public class EmailService  {
             map.put("supportEmail", "support@acmeplex.com");
             map.put("details", getDetailDesign(mail.getDetails()));
 
+            if (mail.getMessageSubType() == MessageSubTypeEnum.PAYMENT_CONFIRMATION){
+                getPaymentInfo(mail, map);
+            }
             String content = getContentFromTemplate(map, mail.getMessageSubType());
             mimeMessageHelper.setText(content, true);
             mimeMessageHelper.addInline("acmeplexLogo", getFilePathResource(Constant.ACMEPLEX_ICON_PATH), IMAGE_FORMAT);
@@ -89,6 +91,15 @@ public class EmailService  {
             return ResponseData.getInstance(ResponseCodeEnum.ERROR);
         }
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS);
+    }
+
+    private void getPaymentInfo(EmailMessage mail, Map<String, Object> map) {
+        map.put("paymentReference", mail.getPaymentReference());
+        map.put("currentDate", LocalDateTime.now());
+        map.put("amount", mail.getTotalAmount());
+        map.put("cardType", mail.getCardType());
+        map.put("billingAddress", mail.getBillingAddress());
+        map.put("cardHolderName", mail.getCardHolderName());
     }
 
     private String getDetailDesign(Map<String, String> details) {
