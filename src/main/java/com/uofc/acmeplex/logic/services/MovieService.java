@@ -95,7 +95,7 @@ public class MovieService implements IMovieService {
             raiseRequests = movieRepository.findAllByActiveAndMovieName(pageable, true, name);
         } else {
             //Only show movies that were create 5hours ago on the landing for Ordinary Users
-            raiseRequests = movieRepository.findAllByActiveAndCreateDateLessThanEqual(pageable, true, LocalDateTime.now().minusHours(5));
+            raiseRequests = movieRepository.findAllByActiveAndMovieNameAndCreateDateLessThanEqual(pageable, true, name, LocalDateTime.now().minusHours(5));
         }
         if (!raiseRequests.isEmpty()) {
             Map<String, Object> metaData = new HashMap<>();

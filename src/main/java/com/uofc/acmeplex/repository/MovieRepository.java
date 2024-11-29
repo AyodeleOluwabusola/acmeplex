@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     Optional<Movie> findByMovieName(String name);
-    Page<Movie> findAllByActiveAndCreateDateLessThanEqual(Pageable id, boolean active, LocalDateTime valid);
+    Page<Movie> findAllByActiveAndMovieNameAndCreateDateLessThanEqual(Pageable id, boolean active, String movieName, LocalDateTime valid);
     Page<Movie> findAllByActiveAndMovieName(Pageable id, boolean active, String movieName);
 }
