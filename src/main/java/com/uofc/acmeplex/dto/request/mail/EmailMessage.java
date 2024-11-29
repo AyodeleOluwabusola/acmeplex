@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -21,11 +22,13 @@ public class EmailMessage implements Serializable {
     private String[] recipients;
     private MessageSubTypeEnum messageSubType = MessageSubTypeEnum.WELCOME;
     private String firstName;
+    private LocalDateTime showTime;
     private String ticketCode;
     private String seats;
     private String movieName;
     private Map<String, String> details;
     private Movie movie;
+    private String theatre;
 
     //Payment
     private String paymentReference;
@@ -33,6 +36,6 @@ public class EmailMessage implements Serializable {
     private String totalAmount;
     private String cardType;
     private String cardHolderName;
-    private String billingAddress;
+    private String email;
 
 }

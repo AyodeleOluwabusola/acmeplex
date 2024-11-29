@@ -5,7 +5,6 @@ import com.uofc.acmeplex.dto.request.ticket.TicketRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
-import com.uofc.acmeplex.entities.RefundCode;
 import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import com.uofc.acmeplex.entities.Ticket;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -80,16 +80,21 @@ public class TicketService implements ITicketService {
             throw new CustomException("One more selected seats(s) was already reserved", HttpStatus.BAD_REQUEST);
         }
 
-        RefundCode refundCode = refundCodeRepository.findByCode(request.getRefundCode())
-                .orElseThrow(() -> new CustomException("Refund code not found", HttpStatus.NOT_FOUND));
+        float refundBalance = 0F;
+        if (StringUtils.isNotBlank(request.getRefundCode())) {
+            refundBalance = refundCodeRepository.findByCode(request.getRefundCode())
+                    .orElseThrow(() -> new CustomException("Refund code not found", HttpStatus.NOT_FOUND))
+                    .getBalance();
+        }
 
-        Float amount = 0F;
+        Float amountPaid = 0F;
         if (StringUtils.isNotBlank(request.getPaymentReference())) {
-             amount = invoiceRepository.findByPaymentReference(request.getPaymentReference())
+             amountPaid = invoiceRepository.findByPaymentReference(request.getPaymentReference())
                     .orElseThrow(() -> new CustomException("Payment reference not found", HttpStatus.NOT_FOUND))
                      .getAmount();
         }
-        if ((refundCode.getBalance() + amount) < showtime.getMovie().getMoviePrice()) {
+
+        if ((refundBalance + amountPaid) < showtime.getMovie().getMoviePrice()) {
             throw new CustomException("Insufficient funds to purchase movie ticket", HttpStatus.BAD_REQUEST);
         }
 
@@ -107,20 +112,23 @@ public class TicketService implements ITicketService {
         ticket.setCode("TKT-" +refundCodeService.generateUniqueCode());
 
         //Send Email with ticket code
-        sendTicketConfirmationEmail(request, showtime, seats, ticket);
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
-    }
-
-    private void sendTicketConfirmationEmail(TicketRequest request, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
         EmailMessage emailMessage = new EmailMessage();
-        emailMessage.setFirstName(request.getEmail());
-        emailMessage.setRecipient(request.getEmail());
+        emailMessage.setFirstName(ticket.getEmail());
+        emailMessage.setRecipient(ticket.getEmail());
         emailMessage.setMessageType("EMAIL");
         emailMessage.setMessageBody("Ticket purchase");
         emailMessage.setSubject("Ticket purchase");
-        var subType = MessageSubTypeEnum.TICKER_PURCHASE;
+        emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
 
+        var subType = MessageSubTypeEnum.TICKER_PURCHASE;
         emailMessage.setMessageSubType(subType);
+
+        sendTicketConfirmationEmail(emailMessage, showtime, seats, ticket);
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
+    }
+
+    private void sendTicketConfirmationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+        emailMessage.setShowTime(showtime.getStartTime());
         emailMessage.setMovie(showtime.getMovie());
         emailMessage.setSeats(convertSeatsToString(seats));
         emailMessage.setTicketCode(ticket.getCode());
@@ -156,23 +164,45 @@ public class TicketService implements ITicketService {
 
         // Free up the seats
         log.debug("SEATS TO CLEAR {}", ticket.getTicketSeats());
+        List<Long> seatsIds = new ArrayList<>(ticket.getTicketSeats());
+        log.debug("SEATS TO CLEAR SECOND {}", seatsIds);
         if (!ticket.getTicketSeats().isEmpty()) {
             theatreSeatRepository.deleteShowTimSeatsBySeatIds(ticket.getTicketSeats());
             ticket.getTicketSeats().clear();
         }
+        log.debug("SEATS TO CLEAR THIRD {}", seatsIds);
 
         //Credit 85%, remove 15% as cancellation fee for Ordinary Users, but credit 100% for Registered Users
         String email = requestBean.getPrincipal(); //Only registered users have a email has token with email in header vaue
+        float amount = 0F;
         if (StringUtils.isNotBlank(email)){
             // Create a promoCode with 100% of the ticket price
-            refundCodeService.createRefundCode(ticket.getMovie().getMoviePrice(), email);
+             amount = ticket.getMovie().getMoviePrice();
+            refundCodeService.createRefundCode(amount, email);
         } else {
             // Create a promoCode with 85% of the ticket price
-            refundCodeService.createRefundCode((float) (ticket.getMovie().getMoviePrice() * 0.85), ticket.getEmail());
+            amount = ticket.getMovie().getMoviePrice() * 0.85F;
+            refundCodeService.createRefundCode(amount, ticket.getEmail());
         }
 
         // Save the updated ticket
         ticketRepository.save(ticket);
+        EmailMessage emailMessage = new EmailMessage();
+        emailMessage.setFirstName(ticket.getEmail());
+        emailMessage.setRecipient(ticket.getEmail());
+        emailMessage.setMessageType("EMAIL");
+        emailMessage.setMessageBody("Ticket cancellation");
+        emailMessage.setSubject("Ticket cancellation");
+        emailMessage.setShowTime(ticket.getShowtime().getStartTime());
+        emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
+
+        emailMessage.setTotalAmount("$ "+ String.format("%.2f", amount));
+        var subType = MessageSubTypeEnum.TICKER_CANCELLATION;
+        emailMessage.setMessageSubType(subType);
+
+        log.debug("ALL SEAT IDs: {}", seatsIds);
+        List<TheatreSeat> seats = theatreSeatRepository.findAllById(seatsIds);
+        sendTicketConfirmationEmail(emailMessage, ticket.getShowtime(), seats, ticket);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, "Ticket canceled successfully");
     }
 

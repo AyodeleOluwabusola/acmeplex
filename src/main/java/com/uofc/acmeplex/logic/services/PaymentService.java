@@ -57,14 +57,16 @@ public class PaymentService implements IPaymentService {
         invoice.setCard(card);
         invoiceRepository.save(invoice);
 
-        sendPaymentNotification(card, invoice);
+        sendPaymentNotification(card, invoice, paymentRequest.getEmail());
         return ResponseData.getInstance(ResponseCodeEnum.PAYMENT_SUCCESSFUL, invoice);
     }
 
-    private void sendPaymentNotification(Card card, Invoice invoice) {
+    private void sendPaymentNotification(Card card, Invoice invoice, String email) {
         EmailMessage emailMessage = new EmailMessage();
-        emailMessage.setFirstName(card.getUser().getFirstName());
-        emailMessage.setRecipient(card.getUser().getEmail());
+        if (card.getUser() != null) {
+            emailMessage.setFirstName(card.getUser().getFirstName());
+        }
+        emailMessage.setRecipient(email);
         emailMessage.setMessageType("EMAIL");
         emailMessage.setMessageBody("Receipt notification");
         emailMessage.setSubject("Receipt notification");
@@ -75,7 +77,7 @@ public class PaymentService implements IPaymentService {
         emailMessage.setTotalAmount("$ " + invoice.getAmount());
         emailMessage.setCardType(card.getCardType().getType());
         emailMessage.setCardHolderName(card.getCardHolderName());
-        emailMessage.setBillingAddress(card.getCardHolderName());
+        emailMessage.setEmail(card.getUser() != null ? card.getUser().getEmail() : email);
 
         CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
     }

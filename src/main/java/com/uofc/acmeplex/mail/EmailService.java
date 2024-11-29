@@ -70,11 +70,13 @@ public class EmailService  {
             map.put("title", mail.getMovie() != null? mail.getMovie().getMovieName() : " ");
             map.put("firstName", Optional.ofNullable(mail.getFirstName()).orElse(".."));
             map.put("message", mail.getMessageBody());
-            map.put("theatre", "Acmeplex");
-            map.put("genre", mail.getMovie() != null? mail.getMovie().getMovieGenre() : " ");
-            map.put("duration", mail.getMovie() != null? mail.getMovie().getMovieDuration() : " ");
+            map.put("theatre", Optional.ofNullable(mail.getTheatre()).orElse("Acmeplex"));
+            map.put("genre", mail.getMovie() != null ? mail.getMovie().getMovieGenre() : " ");
+            map.put("duration", mail.getMovie() != null ? mail.getMovie().getMovieDuration() : " ");
             map.put("seats", Optional.ofNullable(mail.getSeats()).orElse(".."));
             map.put("ticketCode", Optional.ofNullable(mail.getTicketCode()).orElse(".."));
+            map.put("amount", Optional.ofNullable(mail.getTotalAmount()).orElse(".."));
+            map.put("showTime", mail.getShowTime() != null ? mail.getShowTime() : "..");
             map.put("supportEmail", "support@acmeplex.com");
             map.put("details", getDetailDesign(mail.getDetails()));
 
@@ -98,7 +100,7 @@ public class EmailService  {
         map.put("currentDate", LocalDateTime.now());
         map.put("amount", mail.getTotalAmount());
         map.put("cardType", mail.getCardType());
-        map.put("billingAddress", mail.getBillingAddress());
+        map.put("email", mail.getEmail());
         map.put("cardHolderName", mail.getCardHolderName());
     }
 
