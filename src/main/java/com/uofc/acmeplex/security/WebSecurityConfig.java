@@ -38,7 +38,7 @@ public class WebSecurityConfig {
                             .requestMatchers("/movie/**").permitAll()
                             .requestMatchers("/ticket/**").permitAll()
                             .requestMatchers("/theatre/**").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/refund/**").permitAll()
+                            .requestMatchers("/refund/**").permitAll()
                             .requestMatchers("/payment").permitAll()
                             .requestMatchers(HttpMethod.POST,"/payment/**").permitAll()
                             .requestMatchers("/theatre-seat/**").permitAll()

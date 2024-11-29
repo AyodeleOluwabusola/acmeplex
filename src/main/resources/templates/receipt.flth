@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h2 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .content table th,
+        .content table td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .footer {
+            background: #f4f4f4;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Payment Receipt</h1>
+        </div>
+        <div class="content">
+            <p>Dear <strong> ${firstName}</strong>,</p>
+            <p>Thank you for your payment! Below are the details of your transaction:</p>
+            
+            <h2>Payment Details</h2>
+            <table>
+                <tr>
+                    <th>Receipt Number</th>
+                    <td>${paymentReference}</td>
+                </tr>
+                <tr>
+                    <th>Transaction Date</th>
+                    <td>${currentDate}</td>
+                </tr>
+                <tr>
+                    <th>Amount Paid</th>
+                    <td>${amount}</td>
+                </tr>
+                <tr>
+                    <th>Payment Method</th>
+                    <td>${cardType}</td>
+                </tr>
+            </table>
+
+            <h2>Billing Information</h2>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <td>${cardHolderName}</td>
+                </tr>
+                <tr>
+                    <th>Email Address</th>
+                    <td>${email}</td>
+                </tr>
+            </table>
+
+            <p>If you have any questions, please contact us at:</p>
+            <p>Email: <a href="mailto:${supportEmail}">${supportEmail}</a></p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 ${theatre}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
