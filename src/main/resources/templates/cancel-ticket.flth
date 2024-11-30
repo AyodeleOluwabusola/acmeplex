@@ -64,11 +64,11 @@
             <p>Dear <strong>${firstName}</strong>,</p>
             <p>Your movie ticket reservation has been successfully canceled. Below are the details of the cancellation:</p>
             
-            <h2>Cancellation Details</h2>
+            <h2>Cancellation Details for Ticket: ${ticketCode}</h2>
             <table>
                 <tr>
-                    <th>Ticket code</th>
-                    <td>${ticketCode}</td>
+                    <th>Refund/Promo code</th>
+                    <td>${refundCode}</td>
                 </tr>
                 <tr>
                     <th>Movie Name</th>

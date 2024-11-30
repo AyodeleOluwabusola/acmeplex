@@ -61,9 +61,9 @@
             <p><strong>Ticket code:</strong> ${ticketCode}</p>
             <p><strong>Movie:</strong> ${title}</p>
 			<p><strong>Genre:</strong> ${genre}</p>
-            <p><strong>Duration:</strong> ${duration}</p>
+            <p><strong>Duration:</strong> ${duration} minutes</p>
 
-            <p><strong>Seats(s):</strong> ${seats} minutes</p>
+            <p><strong>Seats(s):</strong> ${seats}</p>
 
             
 			<p>Enjoy the show!</p>
