@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @Table(name = "acmeplex_user")
 @Entity
-public class AcmePlexUser extends BaseEntity {
+public class User extends BaseEntity {
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;

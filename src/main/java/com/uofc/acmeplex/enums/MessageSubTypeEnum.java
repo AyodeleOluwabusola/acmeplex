@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum MessageSubTypeEnum {
     WELCOME("movie-alert.flth", "images/acmeplex-logo.png"),
     NEW_MOVIE_ALERT("movie-alert.flth", "images/acmeplex-logo.png"),
-    TICKER_PURCHASE("ticket-purchase.flth", "images/acmeplex-logo.png"),
+    TICKET_PURCHASE("ticket-purchase.flth", "images/acmeplex-logo.png"),
     TICKER_CANCELLATION("cancel-ticket.flth", "images/acmeplex-logo.png"),
     PAYMENT_CONFIRMATION("receipt.flth", "images/acmeplex-logo.png"),
     ;

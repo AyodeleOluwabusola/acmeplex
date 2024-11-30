@@ -142,7 +142,7 @@ public class TicketService implements ITicketService {
         emailMessage.setSubject("Ticket purchase");
         emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
 
-        var subType = MessageSubTypeEnum.TICKER_PURCHASE;
+        var subType = MessageSubTypeEnum.TICKET_PURCHASE;
         emailMessage.setMessageSubType(subType);
 
         sendTicketConfirmationEmail(emailMessage, showtime, seats, ticket);

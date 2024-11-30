@@ -5,7 +5,7 @@ import com.uofc.acmeplex.dto.request.payment.PaymentRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
-import com.uofc.acmeplex.entities.AcmePlexUser;
+import com.uofc.acmeplex.entities.User;
 import com.uofc.acmeplex.entities.Card;
 import com.uofc.acmeplex.entities.Invoice;
 import com.uofc.acmeplex.enums.MessageSubTypeEnum;
@@ -45,7 +45,7 @@ public class PaymentService implements IPaymentService {
         card.setExpiryDate(paymentRequest.getExpiryDate());
 
         if (StringUtils.isNotBlank(requestBean.getPrincipal())){{
-            AcmePlexUser user = userRepository.findByEmail(requestBean.getPrincipal())
+            User user = userRepository.findByEmail(requestBean.getPrincipal())
                     .orElseThrow(()-> new CustomException("User not found", HttpStatus.NOT_FOUND));
             card.setUser(user);
         }}
