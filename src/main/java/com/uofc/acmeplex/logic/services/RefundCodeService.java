@@ -22,7 +22,7 @@ public class RefundCodeService implements IRefundService {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 8;
 
-    public IResponse createRefundCode(Float amount, String email) {
+    public RefundCode createRefundCode(Float amount, String email) {
 
         String uniqueCode;
         do {
@@ -38,7 +38,7 @@ public class RefundCodeService implements IRefundService {
         refundCode.setCreatedByEmail(email);
 
         // Save the RefundCode entity to the database and return response
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, refundCodeRepository.save(refundCode));
+        return refundCodeRepository.save(refundCode);
     }
 
     @Override

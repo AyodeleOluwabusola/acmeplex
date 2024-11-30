@@ -5,6 +5,7 @@ import com.uofc.acmeplex.dto.request.ticket.TicketRequest;
 import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
+import com.uofc.acmeplex.entities.RefundCode;
 import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import com.uofc.acmeplex.entities.Ticket;
@@ -23,6 +24,8 @@ import com.uofc.acmeplex.security.RequestBean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +59,19 @@ public class TicketService implements ITicketService {
 
     private final RequestBean requestBean;
 
+    @Override
+    public IResponse fetchTicket(Pageable pageable) {
+        Page<Ticket> allTickets = ticketRepository.findAllByEmail(pageable, requestBean.getPrincipal());
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, allTickets.getContent());
+    }
+
+    @Override
+    public IResponse retrieveTicketByCode(String code) {
+        Ticket ticket = ticketRepository.findByCode(code)
+                .orElseThrow(() -> new CustomException("Ticket not found", HttpStatus.NOT_FOUND));
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticket);
+    }
+
     public IResponse issueTicket(TicketRequest request) {
 
         log.debug("Issuing ticket for user: {}", requestBean.getPrincipal());
@@ -81,10 +97,11 @@ public class TicketService implements ITicketService {
         }
 
         float refundBalance = 0F;
+        RefundCode refundCode = null;
         if (StringUtils.isNotBlank(request.getRefundCode())) {
-            refundBalance = refundCodeRepository.findByCode(request.getRefundCode())
-                    .orElseThrow(() -> new CustomException("Refund code not found", HttpStatus.NOT_FOUND))
-                    .getBalance();
+            refundCode = refundCodeRepository.findByCode(request.getRefundCode())
+                    .orElseThrow(() -> new CustomException("Refund code not found", HttpStatus.NOT_FOUND));
+            refundBalance = refundCode.getBalance();
         }
 
         Float amountPaid = 0F;
@@ -98,12 +115,17 @@ public class TicketService implements ITicketService {
             throw new CustomException("Insufficient funds to purchase movie ticket", HttpStatus.BAD_REQUEST);
         }
 
+        if (refundCode != null) {
+            refundBalance = Math.max(0, refundBalance - showtime.getMovie().getMoviePrice());
+            refundCode.setBalance(refundBalance);
+            refundCodeRepository.save(refundCode);
+        }
+
         // Create and save ticket
         Ticket ticket = new Ticket();
         ticket.setEmail(request.getEmail());
         ticket.setShowtime(showtime);
         ticket.setMovie(showtime.getMovie());
-
 
         // Assign the seats to the ticket
         showtime.getTheatreSeats().addAll(seats);
@@ -175,14 +197,15 @@ public class TicketService implements ITicketService {
         //Credit 85%, remove 15% as cancellation fee for Ordinary Users, but credit 100% for Registered Users
         String email = requestBean.getPrincipal(); //Only registered users have a email has token with email in header vaue
         float amount = 0F;
+        RefundCode refundCode = null;
         if (StringUtils.isNotBlank(email)){
             // Create a promoCode with 100% of the ticket price
              amount = ticket.getMovie().getMoviePrice();
-            refundCodeService.createRefundCode(amount, email);
+            refundCode= refundCodeService.createRefundCode(amount, email);
         } else {
             // Create a promoCode with 85% of the ticket price
             amount = ticket.getMovie().getMoviePrice() * 0.85F;
-            refundCodeService.createRefundCode(amount, ticket.getEmail());
+            refundCode = refundCodeService.createRefundCode(amount, ticket.getEmail());
         }
 
         // Save the updated ticket
@@ -195,6 +218,7 @@ public class TicketService implements ITicketService {
         emailMessage.setSubject("Ticket cancellation");
         emailMessage.setShowTime(ticket.getShowtime().getStartTime());
         emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
+        emailMessage.setRefundCode(refundCode.getCode());
 
         emailMessage.setTotalAmount("$ "+ String.format("%.2f", amount));
         var subType = MessageSubTypeEnum.TICKER_CANCELLATION;

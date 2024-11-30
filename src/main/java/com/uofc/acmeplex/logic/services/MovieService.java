@@ -39,8 +39,8 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Service
 public class MovieService implements IMovieService {
-    private final UserRepository userRepository;
 
+    private final UserRepository userRepository;
     private final MovieRepository movieRepository;
     private final TheatreRepository theatreRepository;
     private final ShowTimeRepository showTimeRepository;
@@ -86,7 +86,7 @@ public class MovieService implements IMovieService {
         ResponseData<Map<String, Object>> response = new ResponseData<>();
         response.setResponse(ResponseCodeEnum.SUCCESS);
 
-        /**Only show movies that were create 24hours ago on the landing.
+        /**Only show movies that were created 5hours ago on the landing.
          This is make sure only RUs have access before then **/
         log.debug("TIME HERE IS {}", LocalDateTime.now().minusHours(5));
         Page<Movie> raiseRequests = null;
@@ -95,7 +95,7 @@ public class MovieService implements IMovieService {
             raiseRequests = movieRepository.findAllByActiveAndMovieName(pageable, true, name);
         } else {
             //Only show movies that were create 5hours ago on the landing for Ordinary Users
-            raiseRequests = movieRepository.findAllByActiveAndMovieNameAndCreateDateLessThanEqual(pageable, true, name, LocalDateTime.now().minusHours(5));
+            raiseRequests = movieRepository.findAllByActiveAndOptionalMovieNameAndCreateDateLessThanEqual(pageable, true, name, LocalDateTime.now().minusHours(5));
         }
         if (!raiseRequests.isEmpty()) {
             Map<String, Object> metaData = new HashMap<>();
@@ -117,6 +117,9 @@ public class MovieService implements IMovieService {
         List<Theatre> theatres = theatreRepository.findAllById(showTimes.keySet());
 
         for (Theatre theatre : theatres) {
+            if (theatre.getSeats().isEmpty()) {
+                throw new CustomException("No Seat attached to theatre(s)", HttpStatus.NOT_FOUND);
+            }
             List<LocalDateTime> theatreShowTimes = showTimes.get(theatre.getId());
 
             if (theatreShowTimes != null) {

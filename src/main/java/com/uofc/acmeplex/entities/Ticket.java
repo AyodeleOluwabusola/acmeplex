@@ -1,5 +1,6 @@
 package com.uofc.acmeplex.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.uofc.acmeplex.enums.BookingStatusEnum;
 import jakarta.persistence.CollectionTable;
@@ -27,6 +28,7 @@ public class Ticket extends BaseEntity {
     @JoinColumn(name = "movie_fk", nullable = false)
     private Movie movie;
 
+    @JsonIgnore
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne
     @JoinColumn(name = "showtime_fk", nullable = false)

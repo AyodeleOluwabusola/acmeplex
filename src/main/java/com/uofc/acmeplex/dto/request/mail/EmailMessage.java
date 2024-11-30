@@ -29,6 +29,7 @@ public class EmailMessage implements Serializable {
     private Map<String, String> details;
     private Movie movie;
     private String theatre;
+    private String refundCode;
 
     //Payment
     private String paymentReference;
