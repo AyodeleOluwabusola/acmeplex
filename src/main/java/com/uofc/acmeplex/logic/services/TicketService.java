@@ -129,21 +129,20 @@ public class TicketService implements ITicketService {
         ticket.setBookingStatus(BookingStatusEnum.RESERVED);
         ticket.setCode("TKT-" +refundCodeService.generateUniqueCode());
 
-        //Send Email with ticket code
+        //Send ticket confirmation Email
+        sendTicketConfirmationEmail(showtime, seats, ticket);
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
+    }
+
+    private void sendTicketConfirmationEmail(Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+
         EmailMessage emailMessage = new EmailMessage();
         emailMessage.setFirstName(ticket.getEmail());
         emailMessage.setRecipient(ticket.getEmail());
         emailMessage.setMessageType("EMAIL");
         emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
-
         var subType = MessageSubTypeEnum.TICKET_PURCHASE;
         emailMessage.setMessageSubType(subType);
-
-        sendTicketConfirmationEmail(emailMessage, showtime, seats, ticket);
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
-    }
-
-    private void sendTicketConfirmationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
         emailMessage.setMessageBody("Ticket purchase");
         emailMessage.setSubject("Ticket purchase");
         emailMessage.setShowTime(showtime.getStartTime());
@@ -205,21 +204,9 @@ public class TicketService implements ITicketService {
 
         // Save the updated ticket
         ticketRepository.save(ticket);
-        EmailMessage emailMessage = new EmailMessage();
-        emailMessage.setFirstName(ticket.getEmail());
-        emailMessage.setRecipient(ticket.getEmail());
-        emailMessage.setMessageType("EMAIL");
-        emailMessage.setShowTime(ticket.getShowtime().getStartTime());
-        emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
-        emailMessage.setRefundCode(refundCode.getCode());
 
-        emailMessage.setTotalAmount("$ "+ String.format("%.2f", amount));
-        var subType = MessageSubTypeEnum.TICKER_CANCELLATION;
-        emailMessage.setMessageSubType(subType);
-
-        log.debug("ALL SEAT IDs: {}", seatsIds);
-        List<TheatreSeat> seats = theatreSeatRepository.findAllById(seatsIds);
-        sendTicketCancellationEmail(emailMessage, ticket.getShowtime(), seats, ticket);
+        // Send ticket Cancel Email
+        sendTicketCancellationEmail(refundCode.getCode(), amount, ticket.getShowtime(), seatsIds, ticket);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, "Ticket canceled successfully");
     }
 
@@ -233,7 +220,22 @@ public class TicketService implements ITicketService {
                 .collect(Collectors.joining(", "));
     }
 
-    private void sendTicketCancellationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+    private void sendTicketCancellationEmail(String code, Float amount, Showtime showtime, List<Long> seatsIds, Ticket ticket) {
+
+        EmailMessage emailMessage = new EmailMessage();
+        emailMessage.setFirstName(ticket.getEmail());
+        emailMessage.setRecipient(ticket.getEmail());
+        emailMessage.setMessageType("EMAIL");
+        emailMessage.setShowTime(ticket.getShowtime().getStartTime());
+        emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
+        emailMessage.setRefundCode(code);
+        emailMessage.setTotalAmount("$ "+ String.format("%.2f", amount));
+        var subType = MessageSubTypeEnum.TICKER_CANCELLATION;
+        emailMessage.setMessageSubType(subType);
+
+        log.debug("ALL SEAT IDs: {}", seatsIds);
+        List<TheatreSeat> seats = theatreSeatRepository.findAllById(seatsIds);
+
         emailMessage.setMessageBody("Ticket cancellation");
         emailMessage.setSubject("Ticket cancellation");
         emailMessage.setShowTime(showtime.getStartTime());
@@ -242,6 +244,5 @@ public class TicketService implements ITicketService {
         emailMessage.setTicketCode(ticket.getCode());
         CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
     }
-
 
 }
