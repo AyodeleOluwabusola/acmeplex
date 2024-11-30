@@ -154,6 +154,14 @@ public class TicketService implements ITicketService {
         CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
     }
 
+    private void sendTicketCancellationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+        emailMessage.setShowTime(showtime.getStartTime());
+        emailMessage.setMovie(showtime.getMovie());
+        emailMessage.setSeats(convertSeatsToString(seats));
+        emailMessage.setTicketCode(ticket.getCode());
+        CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
+    }
+
 
     public IResponse cancelTicket(String ticketCode, String emailAddress) {
 
