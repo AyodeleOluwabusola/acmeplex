@@ -33,6 +33,6 @@ public class Card extends BaseEntity{
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private AcmePlexUser user;
+    private User user;
 
 }

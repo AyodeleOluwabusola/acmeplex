@@ -7,7 +7,7 @@ import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
 import com.uofc.acmeplex.dto.response.auth.AuthResponse;
-import com.uofc.acmeplex.entities.AcmePlexUser;
+import com.uofc.acmeplex.entities.User;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.ITokenService;
 import com.uofc.acmeplex.logic.IUserService;
@@ -47,7 +47,7 @@ public class UserService implements IUserService {
     @Override
     public IResponse signIn(UserSignInReq userSignInReq) {
 
-        AcmePlexUser user = userRepository.findByEmail(userSignInReq.getEmail())
+        User user = userRepository.findByEmail(userSignInReq.getEmail())
                 .orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
 
 
@@ -90,7 +90,7 @@ public class UserService implements IUserService {
             throw new CustomException("User already exists", HttpStatus.CONFLICT);
         }
 
-        AcmePlexUser user = new AcmePlexUser();
+        User user = new User();
         user.setEmail(req.getEmail());
         user.setFirstName(req.getFirstName());
         user.setLastName(req.getLastName());

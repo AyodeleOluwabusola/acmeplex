@@ -76,6 +76,7 @@ public class EmailService  {
             map.put("seats", Optional.ofNullable(mail.getSeats()).orElse(".."));
             map.put("ticketCode", Optional.ofNullable(mail.getTicketCode()).orElse(".."));
             map.put("amount", Optional.ofNullable(mail.getTotalAmount()).orElse(".."));
+            map.put("refundCode", Optional.ofNullable(mail.getRefundCode()).orElse(".."));
             map.put("showTime", mail.getShowTime() != null ? mail.getShowTime() : "..");
             map.put("supportEmail", "support@acmeplex.com");
             map.put("details", getDetailDesign(mail.getDetails()));
