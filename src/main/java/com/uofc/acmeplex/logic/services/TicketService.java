@@ -83,7 +83,7 @@ public class TicketService implements ITicketService {
         float refundBalance = 0F;
         if (StringUtils.isNotBlank(request.getRefundCode())) {
             refundBalance = refundCodeRepository.findByCode(request.getRefundCode())
-                    .orElseThrow(() -> new CustomException("Refund code not found", HttpStatus.NOT_FOUND))
+                    .orElseThrow(() -> new CustomException("Invalid Code", HttpStatus.NOT_FOUND))
                     .getBalance();
         }
 
