@@ -11,7 +11,6 @@ import com.uofc.acmeplex.entities.Invoice;
 import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.IPaymentService;
-import com.uofc.acmeplex.mail.EmailService;
 import com.uofc.acmeplex.repository.CardRepository;
 import com.uofc.acmeplex.repository.InvoiceRepository;
 import com.uofc.acmeplex.repository.UserRepository;
@@ -33,7 +32,7 @@ public class PaymentService implements IPaymentService {
     private final UserRepository userRepository;
     private final InvoiceRepository invoiceRepository;
     private final RequestBean requestBean;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     public IResponse makePayment(PaymentRequest paymentRequest) {
 
@@ -79,7 +78,7 @@ public class PaymentService implements IPaymentService {
         emailMessage.setCardHolderName(card.getCardHolderName());
         emailMessage.setEmail(card.getUser() != null ? card.getUser().getEmail() : email);
 
-        CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
+        CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
     }
 
     @Override

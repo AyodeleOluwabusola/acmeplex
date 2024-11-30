@@ -13,7 +13,6 @@ import com.uofc.acmeplex.enums.BookingStatusEnum;
 import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.ITicketService;
-import com.uofc.acmeplex.mail.EmailService;
 import com.uofc.acmeplex.repository.InvoiceRepository;
 import com.uofc.acmeplex.repository.RefundCodeRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
@@ -44,7 +43,7 @@ public class TicketService implements ITicketService {
 
     private final TheatreSeatRepository theatreSeatRepository;
 
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     private final TicketRepository ticketRepository;
 
@@ -135,8 +134,6 @@ public class TicketService implements ITicketService {
         emailMessage.setFirstName(ticket.getEmail());
         emailMessage.setRecipient(ticket.getEmail());
         emailMessage.setMessageType("EMAIL");
-        emailMessage.setMessageBody("Ticket purchase");
-        emailMessage.setSubject("Ticket purchase");
         emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
 
         var subType = MessageSubTypeEnum.TICKET_PURCHASE;
@@ -147,21 +144,14 @@ public class TicketService implements ITicketService {
     }
 
     private void sendTicketConfirmationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+        emailMessage.setMessageBody("Ticket purchase");
+        emailMessage.setSubject("Ticket purchase");
         emailMessage.setShowTime(showtime.getStartTime());
         emailMessage.setMovie(showtime.getMovie());
         emailMessage.setSeats(convertSeatsToString(seats));
         emailMessage.setTicketCode(ticket.getCode());
-        CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
+        CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
     }
-
-    private void sendTicketCancellationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
-        emailMessage.setShowTime(showtime.getStartTime());
-        emailMessage.setMovie(showtime.getMovie());
-        emailMessage.setSeats(convertSeatsToString(seats));
-        emailMessage.setTicketCode(ticket.getCode());
-        CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
-    }
-
 
     public IResponse cancelTicket(String ticketCode, String emailAddress) {
 
@@ -219,8 +209,6 @@ public class TicketService implements ITicketService {
         emailMessage.setFirstName(ticket.getEmail());
         emailMessage.setRecipient(ticket.getEmail());
         emailMessage.setMessageType("EMAIL");
-        emailMessage.setMessageBody("Ticket cancellation");
-        emailMessage.setSubject("Ticket cancellation");
         emailMessage.setShowTime(ticket.getShowtime().getStartTime());
         emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
         emailMessage.setRefundCode(refundCode.getCode());
@@ -231,7 +219,7 @@ public class TicketService implements ITicketService {
 
         log.debug("ALL SEAT IDs: {}", seatsIds);
         List<TheatreSeat> seats = theatreSeatRepository.findAllById(seatsIds);
-        sendTicketConfirmationEmail(emailMessage, ticket.getShowtime(), seats, ticket);
+        sendTicketCancellationEmail(emailMessage, ticket.getShowtime(), seats, ticket);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, "Ticket canceled successfully");
     }
 
@@ -244,5 +232,16 @@ public class TicketService implements ITicketService {
                 .map(seat -> seat.getSeatRow() + seat.getSeatNumber())
                 .collect(Collectors.joining(", "));
     }
+
+    private void sendTicketCancellationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+        emailMessage.setMessageBody("Ticket cancellation");
+        emailMessage.setSubject("Ticket cancellation");
+        emailMessage.setShowTime(showtime.getStartTime());
+        emailMessage.setMovie(showtime.getMovie());
+        emailMessage.setSeats(convertSeatsToString(seats));
+        emailMessage.setTicketCode(ticket.getCode());
+        CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
+    }
+
 
 }
