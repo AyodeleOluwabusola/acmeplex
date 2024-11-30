@@ -19,7 +19,6 @@ import com.uofc.acmeplex.repository.RefundCodeRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
 import com.uofc.acmeplex.repository.TheatreSeatRepository;
 import com.uofc.acmeplex.repository.TicketRepository;
-import com.uofc.acmeplex.repository.UserRepository;
 import com.uofc.acmeplex.security.RequestBean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +39,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TicketService implements ITicketService {
-
-    private final UserRepository userRepository;
 
     private final ShowTimeRepository showtimeRepository;
 
