@@ -121,7 +121,6 @@ public class TicketService implements ITicketService {
         Ticket ticket = new Ticket();
         ticket.setEmail(request.getEmail());
         ticket.setShowtime(showtime);
-        ticket.setMovie(showtime.getMovie());
 
         // Assign the seats to the ticket
         showtime.getTheatreSeats().addAll(seats);
@@ -171,7 +170,7 @@ public class TicketService implements ITicketService {
         LocalDateTime showtimeDateTime = ticket.getShowtime().getStartTime();
         //Check if showTime is 72hours prior to current time
         log.debug("Calculated Time: {}", ChronoUnit.HOURS.between(currentTime, showtimeDateTime));
-        if (ChronoUnit.HOURS.between(currentTime, showtimeDateTime) > 72) {
+        if (ChronoUnit.HOURS.between(currentTime, showtimeDateTime) < 72) {
             throw new CustomException("Cannot cancel ticket less than 72 hours before showtime", HttpStatus.BAD_REQUEST);
         }
 
@@ -194,11 +193,11 @@ public class TicketService implements ITicketService {
         RefundCode refundCode = null;
         if (StringUtils.isNotBlank(email)){
             // Create a promoCode with 100% of the ticket price
-             amount = ticket.getMovie().getMoviePrice();
+             amount = ticket.getShowtime().getMovie().getMoviePrice();
             refundCode= refundCodeService.createRefundCode(amount, email);
         } else {
             // Create a promoCode with 85% of the ticket price
-            amount = ticket.getMovie().getMoviePrice() * 0.85F;
+            amount = ticket.getShowtime().getMovie().getMoviePrice() * 0.85F;
             refundCode = refundCodeService.createRefundCode(amount, ticket.getEmail());
         }
 

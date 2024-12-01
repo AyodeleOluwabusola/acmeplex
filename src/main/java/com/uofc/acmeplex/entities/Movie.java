@@ -1,16 +1,11 @@
 package com.uofc.acmeplex.entities;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 @Table(name = "movie")
@@ -43,9 +38,4 @@ public class Movie extends BaseEntity{
 
     @Column(name = "price", nullable = false)
     private Float moviePrice;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany(mappedBy = "movie")
-    @Cascade(CascadeType.ALL)
-    private Set<Showtime> showTimes;
 }
