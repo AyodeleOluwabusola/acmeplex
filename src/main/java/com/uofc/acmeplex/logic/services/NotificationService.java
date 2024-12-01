@@ -1,4 +1,4 @@
-package com.uofc.acmeplex.mail;
+package com.uofc.acmeplex.logic.services;
 
 import com.uofc.acmeplex.dto.request.mail.EmailMessage;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class EmailService  {
+public class NotificationService {
 
     @Value("${mail-sender}")
     private String sender;

@@ -21,7 +21,7 @@ public class TicketController {
     private final ITicketService ticketService;
 
     @GetMapping("all")
-    public IResponse fetchTickets(Pageable pageable) {
+    public IResponse displayTickets(Pageable pageable) {
         return ticketService.fetchTicket(pageable);
     }
 

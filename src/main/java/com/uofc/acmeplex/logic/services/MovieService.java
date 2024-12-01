@@ -13,7 +13,6 @@ import com.uofc.acmeplex.entities.Theatre;
 import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.IMovieService;
-import com.uofc.acmeplex.mail.EmailService;
 import com.uofc.acmeplex.repository.MovieRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
 import com.uofc.acmeplex.repository.TheatreRepository;
@@ -46,7 +45,7 @@ public class MovieService implements IMovieService {
     private final ShowTimeRepository showTimeRepository;
     private final RequestBean requestBean;
     private final AppProperties appProperties;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Override
     public IResponse createMovie(MovieRequest movieRequest) {
@@ -77,7 +76,7 @@ public class MovieService implements IMovieService {
 
             emailMessage.setMessageSubType(subType);
             emailMessage.setMovie(movie);
-            CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
+            CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
         }
     }
 

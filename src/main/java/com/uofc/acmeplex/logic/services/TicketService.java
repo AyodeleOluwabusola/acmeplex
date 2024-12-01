@@ -13,13 +13,11 @@ import com.uofc.acmeplex.enums.BookingStatusEnum;
 import com.uofc.acmeplex.enums.MessageSubTypeEnum;
 import com.uofc.acmeplex.exception.CustomException;
 import com.uofc.acmeplex.logic.ITicketService;
-import com.uofc.acmeplex.mail.EmailService;
 import com.uofc.acmeplex.repository.InvoiceRepository;
 import com.uofc.acmeplex.repository.RefundCodeRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
 import com.uofc.acmeplex.repository.TheatreSeatRepository;
 import com.uofc.acmeplex.repository.TicketRepository;
-import com.uofc.acmeplex.repository.UserRepository;
 import com.uofc.acmeplex.security.RequestBean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,13 +39,11 @@ import java.util.stream.Collectors;
 @Service
 public class TicketService implements ITicketService {
 
-    private final UserRepository userRepository;
-
     private final ShowTimeRepository showtimeRepository;
 
     private final TheatreSeatRepository theatreSeatRepository;
 
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     private final TicketRepository ticketRepository;
 
@@ -133,30 +129,28 @@ public class TicketService implements ITicketService {
         ticket.setBookingStatus(BookingStatusEnum.RESERVED);
         ticket.setCode("TKT-" +refundCodeService.generateUniqueCode());
 
-        //Send Email with ticket code
+        //Send ticket confirmation Email
+        sendTicketConfirmationEmail(showtime, seats, ticket);
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
+    }
+
+    private void sendTicketConfirmationEmail(Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+
         EmailMessage emailMessage = new EmailMessage();
         emailMessage.setFirstName(ticket.getEmail());
         emailMessage.setRecipient(ticket.getEmail());
         emailMessage.setMessageType("EMAIL");
-        emailMessage.setMessageBody("Ticket purchase");
-        emailMessage.setSubject("Ticket purchase");
         emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
-
         var subType = MessageSubTypeEnum.TICKET_PURCHASE;
         emailMessage.setMessageSubType(subType);
-
-        sendTicketConfirmationEmail(emailMessage, showtime, seats, ticket);
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, ticketRepository.save(ticket));
-    }
-
-    private void sendTicketConfirmationEmail(EmailMessage emailMessage, Showtime showtime, List<TheatreSeat> seats, Ticket ticket) {
+        emailMessage.setMessageBody("Ticket purchase");
+        emailMessage.setSubject("Ticket purchase");
         emailMessage.setShowTime(showtime.getStartTime());
         emailMessage.setMovie(showtime.getMovie());
         emailMessage.setSeats(convertSeatsToString(seats));
         emailMessage.setTicketCode(ticket.getCode());
-        CompletableFuture.runAsync(()-> emailService.sendSimpleMail(emailMessage));
+        CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
     }
-
 
     public IResponse cancelTicket(String ticketCode, String emailAddress) {
 
@@ -210,23 +204,9 @@ public class TicketService implements ITicketService {
 
         // Save the updated ticket
         ticketRepository.save(ticket);
-        EmailMessage emailMessage = new EmailMessage();
-        emailMessage.setFirstName(ticket.getEmail());
-        emailMessage.setRecipient(ticket.getEmail());
-        emailMessage.setMessageType("EMAIL");
-        emailMessage.setMessageBody("Ticket cancellation");
-        emailMessage.setSubject("Ticket cancellation");
-        emailMessage.setShowTime(ticket.getShowtime().getStartTime());
-        emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
-        emailMessage.setRefundCode(refundCode.getCode());
 
-        emailMessage.setTotalAmount("$ "+ String.format("%.2f", amount));
-        var subType = MessageSubTypeEnum.TICKER_CANCELLATION;
-        emailMessage.setMessageSubType(subType);
-
-        log.debug("ALL SEAT IDs: {}", seatsIds);
-        List<TheatreSeat> seats = theatreSeatRepository.findAllById(seatsIds);
-        sendTicketConfirmationEmail(emailMessage, ticket.getShowtime(), seats, ticket);
+        // Send ticket Cancel Email
+        sendTicketCancellationEmail(refundCode.getCode(), amount, ticket.getShowtime(), seatsIds, ticket);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, "Ticket canceled successfully");
     }
 
@@ -238,6 +218,31 @@ public class TicketService implements ITicketService {
         return seats.stream()
                 .map(seat -> seat.getSeatRow() + seat.getSeatNumber())
                 .collect(Collectors.joining(", "));
+    }
+
+    private void sendTicketCancellationEmail(String code, Float amount, Showtime showtime, List<Long> seatsIds, Ticket ticket) {
+
+        EmailMessage emailMessage = new EmailMessage();
+        emailMessage.setFirstName(ticket.getEmail());
+        emailMessage.setRecipient(ticket.getEmail());
+        emailMessage.setMessageType("EMAIL");
+        emailMessage.setShowTime(ticket.getShowtime().getStartTime());
+        emailMessage.setTheatre(ticket.getShowtime().getTheatre().getName());
+        emailMessage.setRefundCode(code);
+        emailMessage.setTotalAmount("$ "+ String.format("%.2f", amount));
+        var subType = MessageSubTypeEnum.TICKER_CANCELLATION;
+        emailMessage.setMessageSubType(subType);
+
+        log.debug("ALL SEAT IDs: {}", seatsIds);
+        List<TheatreSeat> seats = theatreSeatRepository.findAllById(seatsIds);
+
+        emailMessage.setMessageBody("Ticket cancellation");
+        emailMessage.setSubject("Ticket cancellation");
+        emailMessage.setShowTime(showtime.getStartTime());
+        emailMessage.setMovie(showtime.getMovie());
+        emailMessage.setSeats(convertSeatsToString(seats));
+        emailMessage.setTicketCode(ticket.getCode());
+        CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
     }
 
 }
