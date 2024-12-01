@@ -1,6 +1,7 @@
 package com.uofc.acmeplex.logic.services;
 
 import com.uofc.acmeplex.dto.request.mail.EmailMessage;
+import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
 import com.uofc.acmeplex.enums.MessageSubTypeEnum;
@@ -49,7 +50,7 @@ public class NotificationService {
 
     private static final String IMAGE_FORMAT = "image/png";
 
-    public ResponseData sendSimpleMail(EmailMessage mail) {
+    public IResponse sendSimpleMail(EmailMessage mail) {
 
         if (StringUtils.isBlank(mail.getMessageBody())) {
             log.debug("Message body is blank {}", mail);
