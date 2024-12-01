@@ -38,8 +38,8 @@ public class TheatreSeatService implements ITheatreSeatService {
     }
 
     @Override
-    public IResponse fetchSeatDistribution(Pageable pageable, Long theatreId) {
-        Page<TheatreSeatStatusDTO> theatreSeats = theatreSeatRepository.fetchSeatDistributionForShowtime(pageable, theatreId);
+    public IResponse fetchSeatDistribution(Pageable pageable, Long theatreId, Long showtimeId) {
+        Page<TheatreSeatStatusDTO> theatreSeats = theatreSeatRepository.fetchSeatDistributionForShowtime(pageable, theatreId, showtimeId);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, TheatreSeatInfo.fromResult(theatreSeats.getContent()));
     }
 

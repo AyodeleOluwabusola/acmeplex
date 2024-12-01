@@ -6,6 +6,7 @@ import com.uofc.acmeplex.dto.response.IResponse;
 import com.uofc.acmeplex.dto.response.ResponseCodeEnum;
 import com.uofc.acmeplex.dto.response.ResponseData;
 import com.uofc.acmeplex.entities.RefundCode;
+import com.uofc.acmeplex.entities.ShowtimeSeat;
 import com.uofc.acmeplex.entities.Showtime;
 import com.uofc.acmeplex.entities.TheatreSeat;
 import com.uofc.acmeplex.entities.Ticket;
@@ -16,6 +17,7 @@ import com.uofc.acmeplex.logic.ITicketService;
 import com.uofc.acmeplex.repository.InvoiceRepository;
 import com.uofc.acmeplex.repository.RefundCodeRepository;
 import com.uofc.acmeplex.repository.ShowTimeRepository;
+import com.uofc.acmeplex.repository.ShowTimeSeatsRepository;
 import com.uofc.acmeplex.repository.TheatreSeatRepository;
 import com.uofc.acmeplex.repository.TicketRepository;
 import com.uofc.acmeplex.security.RequestBean;
@@ -53,6 +55,8 @@ public class TicketService implements ITicketService {
 
     private final InvoiceRepository invoiceRepository;
 
+    private final ShowTimeSeatsRepository showTimeSeatsRepository;
+
     private final RequestBean requestBean;
 
     @Override
@@ -87,7 +91,7 @@ public class TicketService implements ITicketService {
         }
 
         // Check seat availability :
-        List<Long> alreadyReservedSeats = theatreSeatRepository.findExistingTheatreSeatIds(request.getShowtimeId(), request.getSeatIds());
+        List<Long> alreadyReservedSeats = theatreSeatRepository.findExistingReservedTheatreSeats(request.getSeatIds(), request.getShowtimeId());
         if (!alreadyReservedSeats.isEmpty()) {
             throw new CustomException("One more selected seats(s) was already reserved", HttpStatus.BAD_REQUEST);
         }
@@ -123,7 +127,13 @@ public class TicketService implements ITicketService {
         ticket.setShowtime(showtime);
 
         // Assign the seats to the ticket
-        showtime.getTheatreSeats().addAll(seats);
+        for (TheatreSeat seat : seats) {
+            ShowtimeSeat showtimeSeat = new ShowtimeSeat();
+            showtimeSeat.setShowtime(showtime);
+            showtimeSeat.setTheatreSeat(seat);
+            showTimeSeatsRepository.save(showtimeSeat);
+        }
+
         ticket.setTicketSeats(seats.stream().map(TheatreSeat::getId).toList());
         ticket.setBookingStatus(BookingStatusEnum.RESERVED);
         ticket.setCode("TKT-" +refundCodeService.generateUniqueCode());

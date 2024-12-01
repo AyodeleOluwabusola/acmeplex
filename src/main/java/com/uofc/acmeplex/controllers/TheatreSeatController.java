@@ -32,7 +32,7 @@ public class TheatreSeatController {
     }
 
     @GetMapping("seat-distribution")
-    public IResponse fetchSeatDistribution(Pageable pageable, @RequestParam Long showtimeId) {
-        return theatreSeatService.fetchSeatDistribution(pageable, showtimeId);
+    public IResponse fetchSeatDistribution(Pageable pageable, @RequestParam Long theatreId, @RequestParam Long showtimeId) {
+        return theatreSeatService.fetchSeatDistribution(pageable, theatreId, showtimeId);
     }
 }
