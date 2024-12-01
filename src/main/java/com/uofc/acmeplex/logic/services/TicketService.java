@@ -186,7 +186,7 @@ public class TicketService implements ITicketService {
         }
 
         //Credit 85%, remove 15% as cancellation fee for Ordinary Users, but credit 100% for Registered Users
-        String email = requestBean.getPrincipal(); //Only registered users have a email has token with email in header vaue
+        String email = requestBean.getPrincipal(); //Only registered users has token with email in header
         float amount = 0F;
         RefundCode refundCode = null;
         if (StringUtils.isNotBlank(email)){
