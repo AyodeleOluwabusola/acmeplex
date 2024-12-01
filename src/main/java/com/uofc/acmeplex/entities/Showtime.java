@@ -1,12 +1,9 @@
 package com.uofc.acmeplex.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -36,11 +33,8 @@ public class Showtime extends BaseEntity {
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @JsonIgnore
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "showtime_seats", joinColumns = @JoinColumn(name = "showtime_fk", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "theatre_seat_fk", referencedColumnName = "id"))
+    @OneToMany(mappedBy = "showtime", fetch = FetchType.LAZY, orphanRemoval = true)//    @Cascade({CascadeType.ALL})
     @Cascade({CascadeType.ALL})
-    private Set<TheatreSeat> theatreSeats; //tells if a seat is booked or not for a showtime
+    private Set<ShowtimeSeat> showtimeSeats;
+
 }

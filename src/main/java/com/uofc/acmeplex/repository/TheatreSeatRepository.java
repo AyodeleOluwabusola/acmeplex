@@ -18,15 +18,17 @@ public interface TheatreSeatRepository extends JpaRepository<TheatreSeat, Long> 
 
     Page<TheatreSeat> findAllByTheatreId(Pageable pageable, Long theatreId);
 
-    @Query(value = "SELECT ts.id, ts.seat_number as seatNumber, ts.seat_row as seatRow,  " +
-            "CASE  WHEN ss.theatre_seat_fk IS NOT NULL THEN 'TAKEN' ELSE 'AVAILABLE' END AS seatStatus  " +
-            "FROM theatre_seats ts   " +
-            "LEFT JOIN showtime_seats ss ON ss.theatre_seat_fk = ts.id  " +
-            "AND ss.showtime_fk = :showtimeId", nativeQuery = true)
-    Page<TheatreSeatStatusDTO> fetchSeatDistributionForShowtime(Pageable pageable, @Param("showtimeId") Long showtimeId);
+    @Query(value = "SELECT ts.id, ts.seat_number as seatNumber, ts.seat_row as seatRow, " +
+            "CASE WHEN sts.theatre_seat_fk IS NOT NULL THEN 'TAKEN' ELSE 'AVAILABLE' END AS seatStatus " +
+            "FROM  theatre_seats ts " +
+            "LEFT JOIN  showtime_seats sts ON ts.id = sts.theatre_seat_fk AND sts.showtime_fk = :showtimeId " +
+            "WHERE ts.theatre_fk = :theatreId", nativeQuery = true)
+    Page<TheatreSeatStatusDTO> fetchSeatDistributionForShowtime(Pageable pageable, @Param("theatreId") Long theatreId, @Param("showtimeId") Long showtimeId);
 
-    @Query(value = "SELECT ss.theatre_seat_fk FROM showtime_seats ss WHERE ss.showtime_fk = :showtimeId AND ss.theatre_seat_fk IN :theatreSeatIds", nativeQuery = true)
-    List<Long> findExistingTheatreSeatIds(@Param("showtimeId") Long showtimeId, @Param("theatreSeatIds") List<Long> theatreSeatIds);
+    @Query(value = "SELECT ts.seats_fk FROM ticket_seats ts " +
+            "LEFT JOIN showtime_seats ss on ss.theatre_seat_fk = ts.seats_fk " +
+            "WHERE ts.seats_fk IN (:theatreSeatIds) and ss.showtime_fk = :showtimeId", nativeQuery = true)
+    List<Long> findExistingReservedTheatreSeats(@Param("theatreSeatIds") List<Long> theatreSeatIds, Long showtimeId);
 
 
     @Transactional

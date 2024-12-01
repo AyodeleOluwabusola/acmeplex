@@ -10,5 +10,5 @@ public interface ITheatreSeatService {
     //SOLID principle: Dependency Inversion (Classes depending on abstractions)
     IResponse createSeatsForTheatre(Long theatreId, Map<String, Integer> rows);
     IResponse fetchTheatresSeats(Pageable pageable, Long theatreId);
-    IResponse fetchSeatDistribution(Pageable pageable, Long showtimeId);
+    IResponse fetchSeatDistribution(Pageable pageable, Long theatreId, Long showtimeId);
 }

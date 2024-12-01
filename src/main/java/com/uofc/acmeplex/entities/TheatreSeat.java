@@ -21,8 +21,4 @@ public class TheatreSeat extends BaseEntity {
 
     @Column(name = "seat_number", nullable = false)
     private int seatNumber; // 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-
-    @ManyToOne
-    @JoinColumn(name = "ticket_id")
-    private Ticket ticket;
 }
