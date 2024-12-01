@@ -81,7 +81,7 @@ public class JsonWebTokenService implements ITokenService {
             final Date expiration = getExpirationDateFromToken(token);
             return expiration.before(new Date());
         } catch (Exception e) {
-            log.debug("Expired token {}", e);
+            log.debug("Expired token ", e);
         }
         return Boolean.TRUE;
     }
