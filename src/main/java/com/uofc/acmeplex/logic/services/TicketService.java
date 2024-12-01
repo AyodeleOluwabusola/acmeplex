@@ -180,12 +180,10 @@ public class TicketService implements ITicketService {
         // Free up the seats
         log.debug("SEATS TO CLEAR {}", ticket.getTicketSeats());
         List<Long> seatsIds = new ArrayList<>(ticket.getTicketSeats());
-        log.debug("SEATS TO CLEAR SECOND {}", seatsIds);
         if (!ticket.getTicketSeats().isEmpty()) {
             theatreSeatRepository.deleteShowTimSeatsBySeatIds(ticket.getTicketSeats());
             ticket.getTicketSeats().clear();
         }
-        log.debug("SEATS TO CLEAR THIRD {}", seatsIds);
 
         //Credit 85%, remove 15% as cancellation fee for Ordinary Users, but credit 100% for Registered Users
         String email = requestBean.getPrincipal(); //Only registered users have a email has token with email in header vaue
