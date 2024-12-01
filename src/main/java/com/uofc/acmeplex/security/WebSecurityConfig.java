@@ -34,6 +34,7 @@ public class WebSecurityConfig {
 
         http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> {
                     authorizationManagerRequestMatcherRegistry.requestMatchers("/actuator/**").permitAll()
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                             .requestMatchers("/user/**").permitAll()
                             .requestMatchers("/movie/**").permitAll()
                             .requestMatchers("/ticket/issue").permitAll()
