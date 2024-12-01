@@ -1,7 +1,5 @@
 package com.uofc.acmeplex.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.uofc.acmeplex.enums.BookingStatusEnum;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -25,12 +23,6 @@ public class Ticket extends BaseEntity {
     private String email;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "movie_fk", nullable = false)
-    private Movie movie;
-
-    @JsonIgnore
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ManyToOne
     @JoinColumn(name = "showtime_fk", nullable = false)
     private Showtime showtime;
 

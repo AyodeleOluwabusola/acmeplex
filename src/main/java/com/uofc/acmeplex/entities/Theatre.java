@@ -1,5 +1,6 @@
 package com.uofc.acmeplex.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -19,6 +20,7 @@ public class Theatre extends BaseEntity{
     @Column(name = "location", nullable = false)
     private String location;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "theatre")
     private List<TheatreSeat> seats;
 

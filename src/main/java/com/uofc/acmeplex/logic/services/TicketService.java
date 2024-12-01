@@ -121,7 +121,6 @@ public class TicketService implements ITicketService {
         Ticket ticket = new Ticket();
         ticket.setEmail(request.getEmail());
         ticket.setShowtime(showtime);
-        ticket.setMovie(showtime.getMovie());
 
         // Assign the seats to the ticket
         showtime.getTheatreSeats().addAll(seats);
@@ -171,7 +170,7 @@ public class TicketService implements ITicketService {
         LocalDateTime showtimeDateTime = ticket.getShowtime().getStartTime();
         //Check if showTime is 72hours prior to current time
         log.debug("Calculated Time: {}", ChronoUnit.HOURS.between(currentTime, showtimeDateTime));
-        if (ChronoUnit.HOURS.between(currentTime, showtimeDateTime) > 72) {
+        if (ChronoUnit.HOURS.between(currentTime, showtimeDateTime) < 72) {
             throw new CustomException("Cannot cancel ticket less than 72 hours before showtime", HttpStatus.BAD_REQUEST);
         }
 
@@ -181,24 +180,22 @@ public class TicketService implements ITicketService {
         // Free up the seats
         log.debug("SEATS TO CLEAR {}", ticket.getTicketSeats());
         List<Long> seatsIds = new ArrayList<>(ticket.getTicketSeats());
-        log.debug("SEATS TO CLEAR SECOND {}", seatsIds);
         if (!ticket.getTicketSeats().isEmpty()) {
             theatreSeatRepository.deleteShowTimSeatsBySeatIds(ticket.getTicketSeats());
             ticket.getTicketSeats().clear();
         }
-        log.debug("SEATS TO CLEAR THIRD {}", seatsIds);
 
         //Credit 85%, remove 15% as cancellation fee for Ordinary Users, but credit 100% for Registered Users
-        String email = requestBean.getPrincipal(); //Only registered users have a email has token with email in header vaue
+        String email = requestBean.getPrincipal(); //Only registered users has token with email in header
         float amount = 0F;
         RefundCode refundCode = null;
         if (StringUtils.isNotBlank(email)){
             // Create a promoCode with 100% of the ticket price
-             amount = ticket.getMovie().getMoviePrice();
+             amount = ticket.getShowtime().getMovie().getMoviePrice();
             refundCode= refundCodeService.createRefundCode(amount, email);
         } else {
             // Create a promoCode with 85% of the ticket price
-            amount = ticket.getMovie().getMoviePrice() * 0.85F;
+            amount = ticket.getShowtime().getMovie().getMoviePrice() * 0.85F;
             refundCode = refundCodeService.createRefundCode(amount, ticket.getEmail());
         }
 
