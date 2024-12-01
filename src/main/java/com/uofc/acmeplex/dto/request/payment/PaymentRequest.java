@@ -35,4 +35,8 @@ public class PaymentRequest {
 
     @NotBlank(message = "CVV is required")
     private String cvv;
+
+    private Long cardId;
+
+    private boolean saveCard;
 }

@@ -35,20 +35,29 @@ public class PaymentService implements IPaymentService {
     private final NotificationService notificationService;
 
     public IResponse makePayment(PaymentRequest paymentRequest) {
-
         Card card = new Card();
-        card.setCvv(paymentRequest.getCvv());
-        card.setCardType(paymentRequest.getCardType());
-        card.setCardNumber(paymentRequest.getCardNumber());
-        card.setCardHolderName(paymentRequest.getCardHolderName());
-        card.setExpiryDate(paymentRequest.getExpiryDate());
+        if(paymentRequest.getCardId() != null ){
+            card = cardRepository.findById(paymentRequest.getCardId())
+                    .orElseThrow(()-> new CustomException("Card not found", HttpStatus.NOT_FOUND));
+        }else {
+            card.setCvv(paymentRequest.getCvv());
+            card.setCardType(paymentRequest.getCardType());
+            card.setCardNumber(paymentRequest.getCardNumber());
+            card.setCardHolderName(paymentRequest.getCardHolderName());
+            card.setExpiryDate(paymentRequest.getExpiryDate());
+        }
 
-        if (StringUtils.isNotBlank(requestBean.getPrincipal())){{
+
+        if (StringUtils.isNotBlank(requestBean.getPrincipal())) {
+
             User user = userRepository.findByEmail(requestBean.getPrincipal())
-                    .orElseThrow(()-> new CustomException("User not found", HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
             card.setUser(user);
-        }}
+        }
+
+
         cardRepository.save(card);
+
 
         Invoice invoice = new Invoice();
         invoice.setPaymentReference("PYR" + card.getId() + System.currentTimeMillis());
