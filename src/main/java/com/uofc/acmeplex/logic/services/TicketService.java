@@ -202,7 +202,7 @@ public class TicketService implements ITicketService {
         // Save the updated ticket
         ticketRepository.save(ticket);
 
-        // Send ticket Cancel Email
+        // Send ticket Cancellation Email
         sendTicketCancellationEmail(refundCode.getCode(), amount, ticket.getShowtime(), seatsIds, ticket);
         return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, "Ticket canceled successfully");
     }
