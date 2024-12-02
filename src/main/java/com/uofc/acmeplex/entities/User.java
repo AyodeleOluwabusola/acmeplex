@@ -10,6 +10,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Table(name = "acmeplex_user")
 @Entity
@@ -23,6 +25,9 @@ public class User extends BaseEntity {
 
     @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(name = "last_payment_date")
+    private LocalDateTime lastPaymentDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_type", nullable = false)

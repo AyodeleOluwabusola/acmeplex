@@ -33,7 +33,7 @@ public class Showtime extends BaseEntity {
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @OneToMany(mappedBy = "showtime", fetch = FetchType.LAZY, orphanRemoval = true)//    @Cascade({CascadeType.ALL})
+    @OneToMany(mappedBy = "showtime", fetch = FetchType.LAZY, orphanRemoval = true)
     @Cascade({CascadeType.ALL})
     private Set<ShowtimeSeat> showtimeSeats;
 

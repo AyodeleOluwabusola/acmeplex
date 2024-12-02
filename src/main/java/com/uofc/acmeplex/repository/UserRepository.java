@@ -16,6 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT u.email as email, u.firstName as firstName FROM User u")
+    @Query("SELECT u.email as email, u.firstName as firstName, u.lastPaymentDate as lastPaymentDate FROM User u")
     List<IUserDetails> findAllEmailsAndFirstName();
 }

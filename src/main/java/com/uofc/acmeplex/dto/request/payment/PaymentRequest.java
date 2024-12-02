@@ -28,6 +28,7 @@ public class PaymentRequest {
 
     @NotBlank(message = "Email address is required")
     private String email;
+    private String principal;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/yyyy")
     @Pattern(regexp = "^(0[1-9]|1[0-2])/\\d{4}$", message = "Date must be in the format MM/yyyy")
