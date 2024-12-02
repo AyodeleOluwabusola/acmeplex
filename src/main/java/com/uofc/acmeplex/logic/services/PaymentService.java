@@ -42,12 +42,13 @@ public class PaymentService implements IPaymentService {
     private final RequestBean requestBean;
     private final NotificationService notificationService;
 
+    @Override
     public IResponse makePayment(PaymentRequest paymentRequest) {
         Card card = new Card();
-        if(paymentRequest.getCardId() != null ){
+        if (paymentRequest.getCardId() != null) {
             card = cardRepository.findById(paymentRequest.getCardId())
-                    .orElseThrow(()-> new CustomException("Card not found", HttpStatus.NOT_FOUND));
-        }else {
+                    .orElseThrow(() -> new CustomException("Card not found", HttpStatus.NOT_FOUND));
+        } else {
             card.setCvv(paymentRequest.getCvv());
             card.setCardType(paymentRequest.getCardType());
             card.setCardNumber(paymentRequest.getCardNumber());
@@ -55,10 +56,9 @@ public class PaymentService implements IPaymentService {
             card.setExpiryDate(paymentRequest.getExpiryDate());
         }
 
-
-        if (StringUtils.isNotBlank(paymentRequest.getPrincipal())){{
+        if (StringUtils.isNotBlank(paymentRequest.getPrincipal())) {
             User user = userRepository.findByEmail(paymentRequest.getPrincipal())
-                    .orElseThrow(()-> new CustomException("User not found", HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
             card.setUser(user);
         }
         cardRepository.save(card);
@@ -71,6 +71,13 @@ public class PaymentService implements IPaymentService {
 
         sendPaymentNotification(card, invoice, paymentRequest.getEmail());
         return ResponseData.getInstance(ResponseCodeEnum.PAYMENT_SUCCESSFUL, invoice);
+    }
+
+
+    @Override
+    public IResponse fetchAllUserCards(Pageable pageable) {
+        Page<Card> cards = cardRepository.findAllByUserEmail(requestBean.getPrincipal(), pageable);
+        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, cards.getContent());
     }
 
     private void sendPaymentNotification(Card card, Invoice invoice, String email) {
@@ -91,13 +98,7 @@ public class PaymentService implements IPaymentService {
         emailMessage.setCardHolderName(card.getCardHolderName());
         emailMessage.setEmail(card.getUser() != null ? card.getUser().getEmail() : email);
 
-        CompletableFuture.runAsync(()-> notificationService.sendSimpleMail(emailMessage));
-    }
-
-    @Override
-    public IResponse fetchAllUserCards(Pageable pageable) {
-        Page<Card> cards = cardRepository.findAllByUserEmail(requestBean.getPrincipal(), pageable);
-        return ResponseData.getInstance(ResponseCodeEnum.SUCCESS, cards.getContent());
+        CompletableFuture.runAsync(() -> notificationService.sendSimpleMail(emailMessage));
     }
 
     //Runs once every day and picks users that are due for annual billing of $20
