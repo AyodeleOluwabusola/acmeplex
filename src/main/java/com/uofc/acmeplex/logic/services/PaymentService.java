@@ -44,6 +44,11 @@ public class PaymentService implements IPaymentService {
 
     @Override
     public IResponse makePayment(PaymentRequest paymentRequest) {
+
+        if (paymentRequest.getCardNumber().length() < 6){
+            return ResponseData.getInstance(ResponseCodeEnum.INVALID_CARD_NUMBER, "Card number invalid");
+        }
+
         Card card = new Card();
         if (paymentRequest.getCardId() != null) {
             card = cardRepository.findById(paymentRequest.getCardId())

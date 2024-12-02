@@ -12,6 +12,7 @@ public enum ResponseCodeEnum {
     BAD_REQUEST("-7", "Bad request Kindly confirm your input" ),
     NO_MESSAGE_PASSED("-98", "Message body is blank"),
     PAYMENT_SUCCESSFUL("00", "Payment Successful"),
+    INVALID_CARD_NUMBER("89", "Card invalid"),
     ;
 
     private final String status;
