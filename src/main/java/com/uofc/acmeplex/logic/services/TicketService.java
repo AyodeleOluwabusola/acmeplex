@@ -111,7 +111,7 @@ public class TicketService implements ITicketService {
                      .getAmount();
         }
 
-        if ((refundBalance + amountPaid) < showtime.getMovie().getMoviePrice()) {
+        if ((refundBalance + amountPaid * showtime.getShowtimeSeats().size()) < showtime.getMovie().getMoviePrice()) {
             throw new CustomException("Insufficient funds to purchase movie ticket", HttpStatus.BAD_REQUEST);
         }
 
@@ -201,11 +201,11 @@ public class TicketService implements ITicketService {
         RefundCode refundCode = null;
         if (StringUtils.isNotBlank(email)){
             // Create a promoCode with 100% of the ticket price
-             amount = ticket.getShowtime().getMovie().getMoviePrice();
+             amount = ticket.getShowtime().getMovie().getMoviePrice() * seatsIds.size();
             refundCode= refundCodeService.createRefundCode(amount, email);
         } else {
             // Create a promoCode with 85% of the ticket price
-            amount = ticket.getShowtime().getMovie().getMoviePrice() * 0.85F;
+            amount = ticket.getShowtime().getMovie().getMoviePrice() * seatsIds.size() * 0.85F;
             refundCode = refundCodeService.createRefundCode(amount, ticket.getEmail());
         }
 
