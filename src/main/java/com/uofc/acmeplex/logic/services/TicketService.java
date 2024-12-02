@@ -111,7 +111,7 @@ public class TicketService implements ITicketService {
                      .getAmount();
         }
 
-        if ((refundBalance + amountPaid * showtime.getShowtimeSeats().size()) < showtime.getMovie().getMoviePrice()) {
+        if ((refundBalance + amountPaid / showtime.getShowtimeSeats().size()) < showtime.getMovie().getMoviePrice()) {
             throw new CustomException("Insufficient funds to purchase movie ticket", HttpStatus.BAD_REQUEST);
         }
 
