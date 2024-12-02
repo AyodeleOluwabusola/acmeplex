@@ -65,7 +65,7 @@ public class ExceptionHandler {
                 ));
         ResponseData<Object> response = ResponseData.getInstance(ResponseCodeEnum.INVALID_REQUEST, responseDescription);
 
-        return new ResponseEntity(response, HttpStatus.OK);
+        return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity handleValidationException(ValidationException exception) {
