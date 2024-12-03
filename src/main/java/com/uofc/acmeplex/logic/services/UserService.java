@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -96,6 +97,7 @@ public class UserService implements IUserService {
         user.setLastName(req.getLastName());
         user.setPassword(commonLogic.encodePassword(req.getPassword()));
         user.setUserType(req.getUserType());
+        user.setLastPaymentDate(LocalDateTime.now());
 
         //Saves user to database
         userRepository.save(user);
